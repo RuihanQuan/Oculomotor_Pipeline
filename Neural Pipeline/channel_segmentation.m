@@ -63,11 +63,11 @@ ylabel('ycoords')
 figurename = sprintf(rhs_name + "probe_%i_%i.fig", length(indices_stim), length(indices_non_stim));
 
 subfolderName = sprintf('Channel_Map_Seg_at_%iuM_%isat_thresh', dist, sat_thresh);
-
-if ~exist(subfolderName, 'dir')
-    mkdir(subfolderName)
+subfolderDir = fullfile(params.outputfolder, subfolderName);
+if ~exist(subfolderDir, 'dir')
+    mkdir(subfolderDir)
 end
-savepath = fullfile(pwd, subfolderName, figurename);
+savepath = fullfile(subfolderDir, figurename);
 savefig(savepath)
 close
 

@@ -1,5 +1,8 @@
  clear all
  close all
+%% initialize
+[datafolder, F] = readfolder("", "DRL_NXPL_STIM_*");
+outputfolder = uigetdir(pwd, "select folder to store the output");
 %%
 neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
    26, 27, 29, 17, 2,  32, 1,  30, ...
@@ -33,30 +36,32 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
     'chanMap', 'ImecPrimateStimRec128_kilosortChanMap.mat', ... % the channel mapping we are using should be a .mat file this is also used for kilosort4
     'sat_thresh', 0, ... % The maximum value of amplifier data before saturation, 0 for not segmenting the channels based on saturation
     'neuropixel_index', neuropixel_index, ... % the channel indexing for neuropixel. 
-    'name', '' ... % name the rhs file name
+    'name', '', ... % name the rhs file name
+    'outputfolder', outputfolder ...
     );
 
 template_params = struct( 'NSTIM', 0, ... 
     'isstim', true, ...
     'period_avg', 30, ...
-    'start', 30, ...
+    'start', 12, ...
     'buffer', 0 ...
     );
 visualize = "";
 %%
-datafolder = 'E:\neuraldata\Daphne_003';
-F = dir(fullfile(datafolder, 'DRL_NXPL_STIM_*'));
-F = struct2cell(F);
-F = F(1,:);
+% datafolder = 'E:\neuraldata\Daphne_003';
+% F = dir(fullfile(datafolder, 'DRL_NXPL_STIM_*'));
+% F = struct2cell(F);
+% F = F(1,:);
+
 session_trigger = [];
-trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
-
+% trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
+trial_number =[10:17, 40, 43:46];
 file_indices = [];
-temp = 'mid_bot_all';
+temp = 'bot';
 temp(isspace(temp)) = '_';
-fileID = fopen(['all_files_' temp '.bin'],'w');
+fileID = fopen(fullfile(outputfolder, ['all_files_' temp '.bin']),'w');
 
-session_trigger_folder = [temp '_session_trigger'];
+session_trigger_folder =fullfile(outputfolder, [temp '_session_trigger']);
 if ~exist(session_trigger_folder, 'dir')
     mkdir(session_trigger_folder)
 end
@@ -80,11 +85,12 @@ for trial_index = file_indices
 intan_path = fullfile(datafolder, F{trial_index});
 fileidx = split(F{trial_index}, ["_","."]);
 fileNumber = str2double(fileidx(5));
-intan = dir(intan_path);
-
-intan = struct2cell(intan);
-intan = intan(1,3:end);
-intan = intan(contains(intan,'.rhs'));
+% intan = dir(intan_path);
+% 
+% intan = struct2cell(intan);
+% intan = intan(1,3:end);
+% intan = intan(contains(intan,'.rhs'));
+[~, intan] = readfolder(intan_path, "*.rhs");
 intan_files = sort(intan);
 
 
@@ -113,7 +119,7 @@ for intan_file_index = 1:length(intan_files)
 end
     
     session_trigger_file = sprintf('session_trigger_%i.mat', fileNumber);
-    savepath = fullfile(pwd, session_trigger_folder, session_trigger_file);
+    savepath = fullfile(session_trigger_folder, session_trigger_file);
     save(savepath,'session_trigger','-v7.3')
     session_trigger = [];
 end

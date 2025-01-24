@@ -14,13 +14,19 @@ save_neural = 0; % <---set to 1 if you want to save raw neural channels with spi
 
 % [file_names, Path_name] = uigetfile('.mat', 'MultiSelect', 'on'); %select files in "Renamed folder that have been segmented
 
-Path_name = 'E:\neuraldata\Daphne_003_mat\Renamed-Copy\';
-F = dir(fullfile(Path_name, '*_neural.mat'));
-F = struct2cell(F);
-F = F(1,:);
+% Path_name = 'E:\neuraldata\Daphne_003_mat\Renamed-Copy\';
+% F = dir(fullfile(Path_name, '*_neural.mat'));
+% F = struct2cell(F);
+% F = F(1,:);
+[Path_name, F] = readfolder("", "*_neural.mat");
+trigger_file_path = uigetdir(pwd, "select folder for session trigger files");
+file_path= uigetdir(pwd, "select folder for kilosort4 results files");
+outputfolder = uigetdir(pwd, "select output folder");
 file_indices = [];
-trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
-trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
+% trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
+trial_number = [10:17, 40, 43:46];
+% trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
+
 segment_marks = zeros(1, length(trial_number)+1);
 for i = 2:length(trial_number)+1
     trigger_file_name = ['session_trigger_' num2str(trial_number(i-1)) '.mat'];
@@ -46,7 +52,7 @@ file_names = F(file_indices);
 [~,trackname,~] = fileparts(filepath);
 
 
-file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
+%file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
 FR_thr = 10;
 
 % if ~iscell(file_names)
@@ -59,20 +65,20 @@ yc = [20;20;40;40;60;60;80;80;100;100;120;120;140;140;160;160;180;180;200;200;22
 % % load([Path_name '..\KiloSort - Copy\rez.mat'])
 % % load([filepath '\Sorting results\KiloSort2p5\rez.mat'])
 % % rez = get_rez_xy(rez,[filepath '\Sorting results\KiloSort2p5\pc_features.npy']); %<-uncomment if using kilo2.5 output, also change to appropriate directories
-xy = double(readNPY([file_path 'spike_positions.npy']));
+xy = double(readNPY([file_path '\spike_positions.npy']));
 [~,IDX] = min(abs(xy(:,1)'-xc)); %note these xy coordinates are not normally output from kilsort2.5, which makes this script not run unless 2.5 output is modified or these are changed
 [~,IDY] = min(abs(xy(:,2)'-yc)); %note, reverse back x and y for kilo2p5 2 and 1 for kilo3
 CH = mod(IDX+1,2)'+IDY'; % channel map connected
 % ST1 = rez.st3(:,1); % spike time in sample
 
 % CH = double(readNPY([file_path 'channel_map.npy']));
-SC1 = double(readNPY([file_path 'spike_templates.npy']));
+SC1 = double(readNPY([file_path '\spike_templates.npy']));
 % SC1 = rez.st3(:,2); % spike clusters
 cluster_numbers1 = unique(SC1);
 
 % ST = double(readNPY([Path_name '..\KiloSort\spike_times.npy']));
 % ST1 = rez.st3(:,1)
-ST = double(readNPY([file_path 'spike_times.npy']));
+ST = double(readNPY([file_path '\spike_times.npy']));
 % [~,I1] = sort(ST1);
 [~,I2] = sort(ST);
 [~,I3] = sort(I2);
@@ -83,7 +89,7 @@ CH = CH(I);
 % SC = double(readNPY([file_path 'spike_clusters.npy']));
 SC = SC1+1;
 cluster_numbers = unique(SC);
-[data, ~, raw] = tsvread([file_path 'cluster_info.tsv'] );
+[data, ~, raw] = tsvread([file_path '\cluster_info.tsv'] );
 % CH = zeros(size(SC));
 %%
 % FR = raw(2:end,8); %RLM added
@@ -104,7 +110,7 @@ FR = data(2:end, 8);
 quality = raw(2:end,9);
 
 % quality = raw(2:end,9); %9 is the column that is relabeled
-good_cell_index = (FR>40 & strcmp(quality,'good'));
+good_cell_index = (FR>FR_thr & strcmp(quality,'good'));
 %%
 % good_cell_index = (strcmp(quality,'good'));
 cluster_numbers = cluster_numbers(good_cell_index)'; %*manually indicating cluster number instead
@@ -226,10 +232,10 @@ for file_index = 1:length(file_names)
         end
         
         warning off
-        mkdir([Path_name '\..\Seperate_cells\mid_bot_003_no2021\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index}])
+        mkdir([outputfolder '\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index}])
         warning on
 
-        save([Path_name '\..\Seperate_cells\mid_bot_003_no2021\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index} '\' file_name],'Data','-v7.3');
+        save([outputfolder '\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index} '\' file_name],'Data','-v7.3');
         
         % Data_NStruct{cell_index} = Data;
     end
