@@ -5,7 +5,7 @@ function [datafolder, filelist] = readfolder(folder_dir, fileid)
     end
     if fileid == ""
         F = dir(folder_dir);
-        F(~ismember({F.name},{'.','..'}),:);
+        F(~ismember({F.name},{".",".."}),:);
     else
         F = dir(fullfile(folder_dir, fileid));
     end
