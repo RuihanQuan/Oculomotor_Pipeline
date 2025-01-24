@@ -1,10 +1,12 @@
 %% create neural file list of intended tirals
-datafolder = 'E:\neuraldata\Daphne_003_mat\Seperate_cells\mid_bot_003_no2021\Kilosort4\Daphne_003_mat_CELL_81_kilo_79_good\';
-neuralFiles = dir(fullfile(datafolder, '*_neural.mat'));
-neuralFiles = struct2cell(neuralFiles);
-neuralFiles = neuralFiles(1,:);
+% datafolder = 'E:\neuraldata\Daphne_003_mat\Seperate_cells\mid_bot_003_no2021\Kilosort4\Daphne_003_mat_CELL_81_kilo_79_good\';
+% neuralFiles = dir(fullfile(datafolder, '*_neural.mat'));
+% neuralFiles = struct2cell(neuralFiles);
+% neuralFiles = neuralFiles(1,:);
+[datafolder, neuralFiles] = readfolder("", "*_neural.mat");
 trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
 file_indices = [];
+num_list = [];
 for i = 1:length(neuralFiles)
     % Extract the number from the filename
     filename = neuralFiles{i};
@@ -13,6 +15,7 @@ for i = 1:length(neuralFiles)
     % Check if the file number is in the selected ranges
     if any(fileNumber == trial_number)
         file_indices = [file_indices, i]; % Add the index to the list
+        num_list = [num_list, fileNumber];
     end
 end
 %% read data file with neural data
@@ -27,16 +30,16 @@ end
 % channel_num = 8;
 % freq = 400;
 
-% trial_num = [14, 45];
-% duration = 100;
-% channel_num = 16;
-% freq = 200;
-
-
-trial_num = [10, 40];
+trial_num = [14, 45];
 duration = 100;
-channel_num = 8;
+channel_num = 16;
 freq = 200;
+
+% 
+% trial_num = [10, 40];
+% duration = 100;
+% channel_num = 8;
+% freq = 200;
 %% preprocess and post_process on the data 
 p.prebuffer = 100; %prepulse length ms
 p.postbuffer = 150; %postpulse length ms
@@ -50,7 +53,7 @@ session_name = "Daphne-session-3";
 Processed_Data = cell(2, 1);
 % Removed_Data = cell(size(Filelist, 1), 1);
 for i = 1:2
-    file_path = fullfile(datafolder, neuralFiles{file_indices(trial_number == trial_num(i))});
+    file_path = fullfile(datafolder, neuralFiles{file_indices(num_list == trial_num(i))});
     [~, Processed_Data{i}, ~] = pipeline_neural(file_path, p, session_name); 
 end
 %%
@@ -60,7 +63,7 @@ Refined_Data = post_process_neural(Processed_Data);
 %%
 label = {['current steering trial #' num2str(trial_num(1))], ['non current steering trial #' num2str(trial_num(2))]};
 coloring = {'b', 'r'};
-figure
+fig = figure;
 tiledlayout(3,1)
 nexttile;
 for i = 1:2
@@ -119,6 +122,5 @@ title(sprintf("Average Firing Rate for one Cell stim with %i channels at %i Hz i
 xlabel("time (ms)")
 ylabel("Unit Firing Rate")   
 
-%%
 
 %%
