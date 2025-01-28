@@ -2,7 +2,11 @@ function output = post_process_neural(processed_data)
 alpha = 0.05; % alpha: significance level (e.g., 0.05 for 95% confidence interval)
 output =cell(size(processed_data,1), 1) ;
 for i = 1: size(processed_data, 1)
-    temp = processed_data{i};
+    if size(processed_data, 1) > 1    
+        temp = processed_data{i};
+    else
+        temp = processed_data;
+    end
     num_bootstrap = size(temp.timeframe, 2);
     
     temp.ehp_ipsi = cell2mat(temp.ehp_left);

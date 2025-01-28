@@ -1,7 +1,7 @@
  clear all
  close all
 %% initialize
-[datafolder, F] = readfolder("", "DRL_NXPL_STIM_*");
+[datafolder, F] = readfolder("", "*_NXPL_STIM_*");
 outputfolder = uigetdir(pwd, "select folder to store the output");
 %%
 neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
@@ -43,7 +43,7 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 template_params = struct( 'NSTIM', 0, ... 
     'isstim', true, ...
     'period_avg', 30, ...
-    'start', 12, ...
+    'start', 1, ...
     'buffer', 0 ...
     );
 visualize = "";
@@ -54,8 +54,8 @@ visualize = "";
 % F = F(1,:);
 
 session_trigger = [];
-% trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
-trial_number =[10:17, 40, 43:46];
+% trial_number =[10:17, 19, 32:38, 40, 43:45];
+trial_number =[10:17, 40, 43:45];
 file_indices = [];
 temp = 'bot';
 temp(isspace(temp)) = '_';

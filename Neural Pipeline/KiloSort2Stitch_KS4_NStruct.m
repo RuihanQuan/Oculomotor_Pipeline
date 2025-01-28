@@ -24,7 +24,7 @@ file_path= uigetdir(pwd, "select folder for kilosort4 results files");
 outputfolder = uigetdir(pwd, "select output folder");
 file_indices = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
-trial_number = [10:17, 40, 43:46];
+trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 
 segment_marks = zeros(1, length(trial_number)+1);

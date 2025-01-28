@@ -47,9 +47,9 @@ end
 
 %%
 T_corr = table(folderlist', M_corr);
-T_corr.Properties.VariableNames = [10:17, 40, 43:46];
+% T_corr.Properties.VariableNames = {num2str([10:17, 40, 43:45])};
 T_corr.Variables = T_corr.Variables(2:end, :);
 
 %%
 filename = 'correlation_matrix.xlsx';
-writetable(T_corr,filename,'Sheet','correlation_matrix')
+writetable(T_corr,filename,'Sheet','correlation_matrix_reg')
