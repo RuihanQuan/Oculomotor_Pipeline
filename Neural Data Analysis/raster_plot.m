@@ -46,7 +46,7 @@ for i = 1:length(folderlist)
 
             nexttile;
             hold on
-            plot(segs.timeframe, segs.ipsi_ehp_avg, 'Color','r','LineWidth', 3,'DisplayName', number);
+            plot(segs.timeframe, segs.ipsi_ehp_avg, 'Color','r','LineWidth', 1.5,'DisplayName', number);
             x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
             y1_plot = [segs.CI_ipsi_ehp_lower, fliplr(segs.CI_ipsi_ehp_upper)];
             fill(x_plot, y1_plot, 1,'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
@@ -65,7 +65,7 @@ for i = 1:length(folderlist)
 
             nexttile;
             hold on
-            plot(segs.timeframe, 1000*segs.ipsi_ehv_avg, 'Color','r','LineWidth', 3,'DisplayName', number); 
+            plot(segs.timeframe, 1000*segs.ipsi_ehv_avg, 'Color','r','LineWidth', 1.5,'DisplayName', number); 
             x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
             y3_plot = [segs.CI_ipsi_ehv_lower, fliplr(segs.CI_ipsi_ehv_upper)];
             fill(x_plot, 1000*y3_plot, 1,'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
@@ -101,7 +101,7 @@ for i = 1:length(folderlist)
                 rectangle('Position', [0, 0, dur, length(ua)+1], 'FaceColor', 'yellow', 'FaceAlpha', 0.2,  'EdgeColor', 'none');
             end
             % Formatting
-            xlim([timeframe(1) timeframe(end)])
+            xlim([-50 150])
             ylim([0 length(ua)+1]);
             xlabel('time (ms)');
             ylabel('trials');
@@ -115,7 +115,7 @@ for i = 1:length(folderlist)
 
             nexttile;
             hold on
-            plot(segs.timeframe, segs.fr_avg, 'Color','r','LineWidth', 3,'DisplayName', number);
+            plot(segs.timeframe, segs.fr_avg, 'Color','r','LineWidth', 1.5,'DisplayName', number);
             x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
             y3_plot = [segs.CI_fr_lower, fliplr(segs.CI_fr_upper)];
             fill(x_plot, y3_plot, 1,'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color

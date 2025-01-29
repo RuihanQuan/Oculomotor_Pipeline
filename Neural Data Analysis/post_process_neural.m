@@ -88,7 +88,7 @@ function [mean_data, ci_lower, ci_upper] = regular_confidence_interval(data, alp
     t_stat = tinv(1-( alpha) / 2, n_trials - 1);
     
     % Calculate the margin of error
-    margin_of_error = 2 * sem;
+    margin_of_error = t_stat * sem;
     
     % Confidence interval lower and upper bounds
     ci_lower = mean_data - margin_of_error;

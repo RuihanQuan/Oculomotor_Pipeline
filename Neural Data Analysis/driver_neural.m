@@ -29,17 +29,17 @@ end
 % duration = 50;
 % channel_num = 8;
 % freq = 400;
-
-trial_num = [14, 45];
-duration = 100;
-channel_num = 16;
-freq = 200;
-
 % 
-% trial_num = [10, 40];
+% trial_num = [14, 45];
 % duration = 100;
-% channel_num = 8;
+% channel_num = 16;
 % freq = 200;
+
+
+trial_num = [10, 40];
+duration = 100;
+channel_num = 8;
+freq = 200;
 %% preprocess and post_process on the data 
 p.prebuffer = 100; %prepulse length ms
 p.postbuffer = 150; %postpulse length ms

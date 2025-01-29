@@ -34,11 +34,11 @@ for i = 1:NSTIM
 end
  
 
-if isstim
-    template = template1;
-else
+% if isstim
+%     template = template1;
+% else
     template = template2;
-end
+% end
 amplifier_data_copy = amplifier_data;
 for i = 1 : NSTIM
     segment = [-prebuffer+1:period] + trigs(i);
