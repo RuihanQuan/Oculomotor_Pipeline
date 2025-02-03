@@ -1,9 +1,9 @@
 %%
 clc
 clear all
-intan_file = 'E:\neuraldata\Daphne_003\DRL_NXPL_STIM_003_045\DRL_NXPL_STIM_003__220427_174641.rhs';
+% intan_file = 'E:\neuraldata\Daphne_003\DRL_NXPL_STIM_003_045\DRL_NXPL_STIM_003__220427_174641.rhs';
 % non current steering
-% intan_file = 'E:\neuraldata\Daphne_003\DRL_NXPL_STIM_003_014.ccf\DRL_NXPL_STIM_003__220427_163054.rhs';
+intan_file = 'E:\neuraldata\Daphne_003\DRL_NXPL_STIM_003_014\DRL_NXPL_STIM_003__220427_163054.rhs';
 % % % current steering
 read_Intan_RHS2000_file(intan_file)
 
@@ -48,8 +48,8 @@ amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe_params, 
 
 STIM_CHANS = find(any(stim_data>0, 2));
 chan = STIM_CHANS(4);
-% chan = 27;
-TRIGDAT = stim_data(STIM_CHANS(2),:)';
+%chan = 120;
+TRIGDAT = stim_data(STIM_CHANS(1),:)';
 
 set(groot,'defaultLineLineWidth',4.0)
 Z = ZoomPlot([TRIGDAT*500 amplifier_data_copy(chan,:)', amplifier_data(chan,:)' ]);

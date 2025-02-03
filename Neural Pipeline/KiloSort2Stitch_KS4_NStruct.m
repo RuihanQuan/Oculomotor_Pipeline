@@ -141,11 +141,11 @@ N_clusters = length(cluster_numbers);
 %cluster_numbers = [1 17 6 7 15];
 
 %%
-cd ../
+% cd ../
 
 segment_mark = 0; % 0 for the first neural data segment
 for file_index = 1:length(file_names)
-    segment_mark = segment_marks(file_index);
+    % segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
     
@@ -205,7 +205,7 @@ for file_index = 1:length(file_names)
         Data.NumberOfSignals=length(Data.ChannelList);
         Data.Definitions(Data.NumberOfSignals)={['Data.' newname '(1+lat:N)']};
         
-        fr = fr_estimate(Data.(newname),'kaiser',5,1000); %lower cut-off 2*50+1
+        fr = fr_estimate(Data.(newname),'kaiser',0.384,1000); %lower cut-off 2*50+1
         
         newname = 'fr';
         Data.(newname) = fr;
@@ -233,13 +233,13 @@ for file_index = 1:length(file_names)
         
         warning off
         mkdir([outputfolder '\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index}])
-        warning on
+        warning on 
 
         save([outputfolder '\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index} '\' file_name],'Data','-v7.3');
         
         % Data_NStruct{cell_index} = Data;
     end
-
+    segment_mark = segment_mark+length(Data.Intan_idx);
     
  
     % warning off

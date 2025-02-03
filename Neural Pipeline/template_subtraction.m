@@ -14,6 +14,7 @@ repeat_boundaries = [0; find(time_diffs > repeat_gap_threshold); numel(trigs)];
 num_repeats = numel(repeat_boundaries) - 1;
 num_pulse = NSTIM/num_repeats;
 
+
 for i = 1:NSTIM
     segment = [-prebuffer+1:period] + trigs(i);
     chn_data(i, :) = amplifier_data(segment); 
@@ -21,15 +22,11 @@ end
 template1 = chn_data;
 template2 = chn_data;
 temp = start:NSTIM;
-temp = temp(mod(temp, num_pulse)~=1);
-
+temp = temp(and(mod(temp, num_pulse)~=1, mod(temp, num_pulse) ~= 2));
 for i = 1:NSTIM
     if and(mod(i, num_pulse) ~= 1, mod(i, num_pulse) ~= 2)
         template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp, 1:period_avg+prebuffer), 1);
-    else
-        template2(i, 1:period_avg+prebuffer) = chn_data(i, 1:period_avg+prebuffer);
     end
-    template2(i, 1:period_avg+prebuffer) = template2(i, 1:period_avg+prebuffer) ;
     template2(i, period_avg+prebuffer:end) = linspace(template2(i,period_avg+prebuffer), 0, period-period_avg+1);
 end
  
