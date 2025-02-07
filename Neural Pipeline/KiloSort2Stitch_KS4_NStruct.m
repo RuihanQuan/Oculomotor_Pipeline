@@ -53,7 +53,7 @@ file_names = F(file_indices);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 15;
+FR_thr = 20;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -145,7 +145,7 @@ N_clusters = length(cluster_numbers);
 
 segment_mark = 0; % 0 for the first neural data segment
 for file_index = 1:length(file_names)
-    % segment_mark = segment_marks(file_index);
+    segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
     
@@ -179,6 +179,7 @@ for file_index = 1:length(file_names)
         idx = idx(idx>=0);
         disp('segment_index')
         disp(length(idx))
+        
         [~,idx,~] = intersect(Data.Intan_idx,idx);
         disp('index_intersect')
         disp(length(idx))
@@ -239,7 +240,7 @@ for file_index = 1:length(file_names)
         
         % Data_NStruct{cell_index} = Data;
     end
-    segment_mark = segment_mark+length(Data.Intan_idx);
+    % segment_mark = segment_mark+length(Data.Intan_idx);
     
  
     % warning off
