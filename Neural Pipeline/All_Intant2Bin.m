@@ -1,8 +1,15 @@
  clear all
  close all
 %% initialize
-[datafolder, F] = readfolder("", "*_NXPL_STIM_*");
+folder_dir = uigetdir(pwd,'choose a root folder for all sorted intan files');
+[datafolder, F] = readfolder(folder_dir, "*_STIM_*");
 outputfolder = uigetdir(pwd, "select folder to store the output");
+prompt = {'name session .bin file: '};
+dlgtitle = 'bin file naming';
+fieldsize = [1 45];
+definput = {'all_files_'};
+temp = inputdlg(prompt,dlgtitle,fieldsize,definput);
+temp(isspace(temp)) = '_';
 %%
 neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
    26, 27, 29, 17, 2,  32, 1,  30, ...
@@ -40,34 +47,41 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
     'outputfolder', outputfolder ...
     );
 
-template_params = struct( 'NSTIM', 0, ... 
-    'isstim', true, ...
-    'period_avg', 30, ...
-    'start', 1, ...
-    'buffer', 0 ...
+template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
+    'isstim', true, ... % true if the data is from a stim channel
+    'period_avg', 30, ... % number of points to average for the template
+    'start', 30, ... % skip the first number of pulses when calculating the template
+    'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
+    'skip_n', 2 ...% number of initial pulses to skip to calculate the template
     );
-visualize = "";
+visualize = ""; % if we need to visualize the result 
+% "stim": visualize only result of stim channels
+% "neighbor-stim": visualize the stim channels and its neighboring
+% channels
+% "non-stim": only non-stim channels
+% "all": all the channels
+% "": none
 %%
-% datafolder = 'E:\neuraldata\Daphne_003';
-% F = dir(fullfile(datafolder, 'DRL_NXPL_STIM_*'));
-% F = struct2cell(F);
-% F = F(1,:);
+
 
 session_trigger = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:45];
-trial_number =[10:17, 40, 43:45];
+% trial_number =[10:17, 40, 43:45];
+
 file_indices = [];
-temp = 'bot';
-temp(isspace(temp)) = '_';
+trial_number = [];
+
+
+
 fileID = fopen(fullfile(outputfolder, ['all_files_' temp '.bin']),'w');
 
 session_trigger_folder =fullfile(outputfolder, [temp '_session_trigger']);
 if ~exist(session_trigger_folder, 'dir')
     mkdir(session_trigger_folder)
 end
-%%
 
 %%
+if ~isempty(trial_number)
 for i = 1:length(F)
     % Extract the number from the filename
     filename = F{i};
@@ -78,20 +92,23 @@ for i = 1:length(F)
         file_indices = [file_indices, i]; % Add the index to the list
     end
 end
+else 
+    file_indices = 1:length(F);
+end
 %%
 
 
 for trial_index = file_indices
-intan_path = fullfile(datafolder, F{trial_index});
-fileidx = split(F{trial_index}, ["_","."]);
-fileNumber = str2double(fileidx(5));
-% intan = dir(intan_path);
-% 
-% intan = struct2cell(intan);
-% intan = intan(1,3:end);
-% intan = intan(contains(intan,'.rhs'));
-[~, intan] = readfolder(intan_path, "*.rhs");
-intan_files = sort(intan);
+    intan_path = fullfile(datafolder, F{trial_index});
+    fileidx = split(F{trial_index}, ["_","."]);
+    fileNumber = str2double(fileidx(5));
+    % intan = dir(intan_path);
+    % 
+    % intan = struct2cell(intan);
+    % intan = intan(1,3:end);
+    % intan = intan(contains(intan,'.rhs'));
+    [~, intan] = readfolder(intan_path, "*.rhs");
+    intan_files = sort(intan);
 
 
 for intan_file_index = 1:length(intan_files)

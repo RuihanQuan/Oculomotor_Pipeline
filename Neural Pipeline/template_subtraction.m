@@ -7,7 +7,7 @@ period_avg = params.period_avg; % 1ms
 prebuffer = params.buffer;
 chn_data = zeros(NSTIM, period+prebuffer);
 rhs_name = params.name;
-
+skip_n = params.skip_n;
 time_diffs = diff(trigs);
 repeat_gap_threshold = period*2;
 repeat_boundaries = [0; find(time_diffs > repeat_gap_threshold); numel(trigs)];
@@ -22,9 +22,9 @@ end
 template1 = chn_data;
 template2 = chn_data;
 temp = start:NSTIM;
-temp = temp(and(mod(temp, num_pulse)~=1, mod(temp, num_pulse) ~= 2));
+temp = temp(or(mod(temp, num_pulse)==0, mod(temp, num_pulse) > skip_n));
 for i = 1:NSTIM
-    if and(mod(i, num_pulse) ~= 1, mod(i, num_pulse) ~= 2)
+    if or(mod(i, num_pulse)==0, mod(i, num_pulse) > skip_n)
         template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp, 1:period_avg+prebuffer), 1);
     end
     template2(i, period_avg+prebuffer:end) = linspace(template2(i,period_avg+prebuffer), 0, period-period_avg+1);

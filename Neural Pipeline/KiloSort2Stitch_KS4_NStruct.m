@@ -18,34 +18,47 @@ save_neural = 0; % <---set to 1 if you want to save raw neural channels with spi
 % F = dir(fullfile(Path_name, '*_neural.mat'));
 % F = struct2cell(F);
 % F = F(1,:);
-[Path_name, F] = readfolder("", "*_neural.mat");
+mat_files = uigetdir('\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\', 'choose root folder for _neural.mat files to stitch kilosort 4 result');
+[Path_name, F] = readfolder(mat_files, '*_neural.mat');
 trigger_file_path = uigetdir(pwd, "select folder for session trigger files");
 file_path= uigetdir(pwd, "select folder for kilosort4 results files");
 outputfolder = uigetdir(pwd, "select output folder");
+outputfolder = fullfile(outputfolder, 'seperate_cells');
+if ~exist(outputfolder, 'file')
+    mkdir(outptufolder)
+end
 file_indices = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
-trial_number = [10:17, 40, 43:45];
+% trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
-
-segment_marks = zeros(1, length(trial_number)+1);
-for i = 2:length(trial_number)+1
-    trigger_file_name = ['session_trigger_' num2str(trial_number(i-1)) '.mat'];
-    session_trigger = fullfile(trigger_file_path, trigger_file_name);
-    trigger = load(session_trigger);
-    segment_marks(i) = length(trigger.session_trigger);
-end
-segment_marks = cumsum(segment_marks);
+trial_number = [];
+file_num_list = [];
 for i = 1:length(F)
     % Extract the number from the filename
     filename = F{i};
     fileidx = split(filename, ["-","_","."]);
     fileNumber = str2double(fileidx(1));
     % Check if the file number is in the selected ranges
-    if any(fileNumber == trial_number)
-        file_indices = [file_indices, i]; % Add the index to the list
+    if ~isempty(trial_number)
+        if any(fileNumber == trial_number)
+            file_indices = [file_indices, i]; % Add the index to the list
+            file_num_list = [file_num_list, fileNumber];
+        end
+    else 
+        file_indices = [file_indices, i];
+        file_num_list = [file_num_list, fileNumber];
     end
 end
 file_names = F(file_indices);
+segment_marks = zeros(1, length(file_num_list)+1);
+for i = 2:length(file_indices)+1
+    trigger_file_name = ['session_trigger_' num2str(file_num_list(i-1)) '.mat'];
+    session_trigger = fullfile(trigger_file_path, trigger_file_name);
+    trigger = load(session_trigger);
+    segment_marks(i) = length(trigger.session_trigger);
+end
+segment_marks = cumsum(segment_marks);
+
 
 [filepath,~,~] = fileparts(Path_name);
 [filepath,~,~] = fileparts(filepath);
@@ -53,7 +66,7 @@ file_names = F(file_indices);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 20;
+FR_thr = 15;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -149,8 +162,8 @@ for file_index = 1:length(file_names)
     file_name = file_names{file_index};
     disp(file_name)
     
-    disp('segment_mark')
-    disp(segment_mark)
+    % disp('segment_mark')
+    % disp(segment_mark)
 
     load([Path_name '\' file_name],'Data'); %load data structure from a .mat file
     Data_back = Data;
@@ -177,12 +190,12 @@ for file_index = 1:length(file_names)
         spktimes = zeros(length(Data.Intan_idx),1);
         idx = ST(idx)-segment_mark;
         idx = idx(idx>=0);
-        disp('segment_index')
-        disp(length(idx))
+        % disp('segment_index')
+        % disp(length(idx))
         
         [~,idx,~] = intersect(Data.Intan_idx,idx);
-        disp('index_intersect')
-        disp(length(idx))
+        % disp('index_intersect')
+        % disp(length(idx))
         spktimes(idx) = 1;
         
         
