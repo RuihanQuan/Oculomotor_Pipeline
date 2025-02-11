@@ -15,7 +15,7 @@ MATLAB code for
 1. First run ***get_matching_intan_blackrock.m***. the code will generate a sorted intan folder where each intan file sorted and copied to a folder named after the corresponding blackrock files. 
 
 2. Then run ***All_Intan2Bin.m***
-> The code will first prompt for the 
+The code will first prompt:
 
 **root folder for sorted intan files:**
 > This is the root folder for all the sorted intan files from previous steps. 
