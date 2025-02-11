@@ -15,18 +15,18 @@ MATLAB code for
 1. First run ***get_matching_intan_blackrock.m***. the code will generate a sorted intan folder where each intan file sorted and copied to a folder named after the corresponding blackrock files. 
 
 2. Then run ***All_Intan2Bin.m***
-The code will first prompt for the 
+> The code will first prompt for the 
 
 **root folder for sorted intan files:**
-This is the root folder for all the sorted intan files from previous steps. 
+> This is the root folder for all the sorted intan files from previous steps. 
 then the code would prompt for 
 
 **select folder to store the output:**
-This folder is used to store the output of the code: including **session trigger files** (which is used in later steps), **channel mapping schemetic** (red for stim channels and green for the others), and the ***.bin*** file for all the intan files.
+> This folder is used to store the output of the code: including **session trigger files** (which is used in later steps), **channel mapping schemetic** (red for stim channels and green for the others), and the ***.bin*** file for all the intan files.
 The code will then prompt 
 
 **name session .bin file:**
-This ask for an arbitrary name for the .bin file. The default is **all_files_**.
+> This ask for an arbitrary name for the .bin file. The default is **all_files_**.
 
 3. The ***.bin*** file is then used for spike sorting using ***kilosort4***. 
 
@@ -40,13 +40,16 @@ choose root folder for _neural.mat files to stitch kilosort 4 result
 for the folder for the _neural.mat files that is previously generated and calibrated from intan files 
 
 **select folder for session trigger files:**
-this ask for folder for session trigger files generated in step 2
+
+> this ask for folder for session trigger files generated in step 2
 
 **select folder for kilosort4 results files:**
-this ask for the folder for the kilosort4 results. 
+
+> this ask for the folder for the kilosort4 results. 
 
 **select output folder:**
-prompt for the folder to store the _neural.mat files with unit activity (ua) and firing rate estimate (fr). 
+
+> prompt for the folder to store the _neural.mat files with unit activity (ua) and firing rate estimate (fr). 
 
 ### Code Specifics
 #### **All_Intan2Bin.m**
