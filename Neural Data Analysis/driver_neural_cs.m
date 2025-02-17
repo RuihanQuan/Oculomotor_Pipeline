@@ -7,14 +7,20 @@
 trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
 file_indices = [];
 num_list = [];
+
 for i = 1:length(neuralFiles)
     % Extract the number from the filename
     filename = neuralFiles{i};
     fileidx = split(filename, ["-","_","."]);
     fileNumber = str2double(fileidx(1));
     % Check if the file number is in the selected ranges
-    if any(fileNumber == trial_number)
-        file_indices = [file_indices, i]; % Add the index to the list
+    if ~isempty(trial_number)
+        if any(fileNumber == trial_number)
+            file_indices = [file_indices, i]; % Add the index to the list
+            num_list = [num_list, fileNumber];
+        end
+    else 
+        file_indices = [file_indices, i];
         num_list = [num_list, fileNumber];
     end
 end

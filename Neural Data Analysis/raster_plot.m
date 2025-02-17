@@ -11,9 +11,9 @@ p.fc2 = 75;
 p.fs = 1000; 
 p.flag = 1;
 p.threshs = [45, 0.3, 0.6, 0.3, 0.3];
-session_name = "Daphne-session-3";
+session_name = "Caesar-session-2";
 %%
-Trialsetting = readtable('003_Experiment_Trial_setting.xlsx');
+Trialsetting = readtable("D:\Oculomotor Research\Experiment Summary\Experiment_Setting_Summary.xlsx", "Sheet","CRR_NXPL_STIM_002");;
 
 %%
 for i = 1:length(folderlist)
@@ -25,7 +25,7 @@ for i = 1:length(folderlist)
         file_path = fullfile(folder_path, filelist{j});
         parts = strsplit(filelist{j}, '-');
         number = parts{1};
-        if (number == "047") ||( number == "049")
+        if (number == "023") ||( number == "049")
             continue
         end
         [~, Processed_Data, ~] = pipeline_neural(file_path, p, session_name);
@@ -34,12 +34,12 @@ for i = 1:length(folderlist)
         ua = Processed_Data.ua;
         timeframe = Processed_Data.timeframe;
         C = bone(length(ua)*2);
-        C=flip(C(1:length(ua),:));
+        C=flip(C(1:length(ua),:)); 
 
         if ~isempty(ua)
-            dur = Trialsetting.Duration_ms_(Trialsetting.id == str2double(number));
-            channel_num = Trialsetting.num_stim_chan(Trialsetting.id == str2double(number));
-            freq = Trialsetting.Frequency_Hz_(Trialsetting.id == str2double(number));
+            dur = Trialsetting.Duration_ms_(Trialsetting.BR == str2double(number));
+            channel_num = Trialsetting.num_stim_chan(Trialsetting.BR == str2double(number));
+            freq = Trialsetting.Frequency_Hz_(Trialsetting.BR == str2double(number));
             fig = figure;
             
             tiledlayout(4,1)
@@ -55,7 +55,7 @@ for i = 1:length(folderlist)
             hold off
             grid off
             box off
-            axis([-50 150 -15 5]);
+            axis([-50 segs.timeframe(end) -30 20]);
             title(sprintf("Average Eye horizontal Position stim with %i channels at %i Hz in %i ms",channel_num, freq, dur),'Fontsize',16);
             xlabel("time (ms)")
             ylabel("Eye Horizontal Position (deg)")
@@ -74,7 +74,7 @@ for i = 1:length(folderlist)
             hold off
             grid off
             box off
-            axis([-50 150 -250 200]);
+            axis([-50 segs.timeframe(end) -500 300]);
             title(sprintf("Average Eye horizontal Velocity stim with %i channels at %i Hz in %i ms",channel_num, freq, dur),'Fontsize',16);
             xlabel("time (ms)")
             ylabel("Eye Horizontal Velocity (deg/s)")    
@@ -101,7 +101,7 @@ for i = 1:length(folderlist)
                 rectangle('Position', [0, 0, dur, length(ua)+1], 'FaceColor', 'yellow', 'FaceAlpha', 0.2,  'EdgeColor', 'none');
             end
             % Formatting
-            xlim([-50 150])
+            xlim([-50 segs.timeframe(end)])
             ylim([0 length(ua)+1]);
             xlabel('time (ms)');
             ylabel('trials');
@@ -124,7 +124,7 @@ for i = 1:length(folderlist)
             xline(dur, 'k--', 'DisplayName',num2str(dur))
             hold off
             box off
-            axis([-50 150 0 200]);
+            axis([-50 segs.timeframe(end) 0 150]);
             title(sprintf("Average Firing Rate for one Cell stim with %i channels at %i Hz in %i ms",channel_num, freq, dur),'Fontsize',16);
             xlabel("time (ms)")
             ylabel("Unit Firing Rate")   

@@ -52,8 +52,12 @@ for the folder for the _neural.mat files that is previously generated and calibr
 > prompt for the folder to store the _neural.mat files with unit activity (ua) and firing rate estimate (fr). 
 
 ### Code Specifics
+### **get_matching_intan_blackrock.m**
+The code match the black rock files to the corresponding intan files based on the last modified dates of the ***setting.xml*** and ***.ccf*** files. Such that we can keep the numbering of the neural files constitent with the blackrock files. 
+
 #### **All_Intan2Bin.m**
 Adapt the approach of concatenating all Intan recordings from multiple stimulation trials into a single ***.bin*** file for spike sorting using **Kilosort4**. The default channel map setting, ImecPrimateStimRec128_kilosortChanMap.mat, contains the coordinates (in µm) of the **128** channels on the **Neuropixel read &write probe**. The mapping of Neuropixel channel arrangement to the numbering in Intan files is predefined in the code as ***neuropixel_index***. Additionally, the code utilizes ***artifact_Removal.m*** to eliminate artifacts in the recordings caused by stimulation onset. The parameters for artifact removal can be fine-tuned for each specific session using the scripts in filter test.
 
-
+### **KiloSort2Stitch_KS4_NStruct.m**
+The code stitch the result of spike sorting back to the raw neural data struct. The code match the spike times detected by kilosort4 and the time stamp on the neural data. The process add two new fields (unit activity (ua) and firing rate estimate (fr)) to the data struct. Note that fr is estimated from ua using kaiser filter of at a cutoff frequency tailored to the data and a sampling rate of 1000. 
 

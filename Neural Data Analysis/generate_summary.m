@@ -1,4 +1,4 @@
-[datafolder, folderlist] = readfolder("", "neuraldata_*");
+[datafolder, folderlist] = readfolder("", "*_CELL_*");
 outputdir = uigetdir(datafolder, 'choose a folder to save the output');
 [~, filelist] = readfolder(fullfile(datafolder, folderlist{1}), "*_neural.mat");
 filename = 'summary.xlsx';

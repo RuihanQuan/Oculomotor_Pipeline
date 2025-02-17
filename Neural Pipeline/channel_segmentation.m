@@ -58,6 +58,7 @@ legend
 title('Neuropixel Probe Channel Map')
 xlabel('xcoords')
 ylabel('ycoords')
+axis([(min(xcoords)-40*range(xcoords)) (max(xcoords)+40*range(xcoords)) 0 (max(ycoords)+100)]);
 
 
 figurename = sprintf(rhs_name + "probe_%i_%i.fig", length(indices_stim), length(indices_non_stim));

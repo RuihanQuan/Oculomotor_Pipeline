@@ -25,13 +25,13 @@ file_path= uigetdir(pwd, "select folder for kilosort4 results files");
 outputfolder = uigetdir(pwd, "select output folder");
 outputfolder = fullfile(outputfolder, 'seperate_cells');
 if ~exist(outputfolder, 'file')
-    mkdir(outptufolder)
+    mkdir(outputfolder)
 end
 file_indices = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
-trial_number = [];
+trial_number = [23];
 file_num_list = [];
 for i = 1:length(F)
     % Extract the number from the filename
@@ -157,7 +157,7 @@ N_clusters = length(cluster_numbers);
 % cd ../
 
 segment_mark = 0; % 0 for the first neural data segment
-for file_index = 1:length(file_names)
+for file_index = 13:length(file_names)
     segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
@@ -219,7 +219,7 @@ for file_index = 1:length(file_names)
         Data.NumberOfSignals=length(Data.ChannelList);
         Data.Definitions(Data.NumberOfSignals)={['Data.' newname '(1+lat:N)']};
         
-        fr = fr_estimate(Data.(newname),'kaiser',0.384,1000); %lower cut-off 2*50+1
+        fr = fr_estimate(Data.(newname),'kaiser',3,1000); %lower cut-off 2*50+1
         
         newname = 'fr';
         Data.(newname) = fr;
