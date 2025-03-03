@@ -1,12 +1,18 @@
 %%
 clc
 clear all
-intan_file = 'E:\neuraldata\Daphne_003\DRL_NXPL_STIM_003_045\DRL_NXPL_STIM_003__220427_174641.rhs';
-% non current steering
-% intan_file = 'E:\neuraldata\Daphne_003\DRL_NXPL_STIM_003_014\DRL_NXPL_STIM_003__220427_163054.rhs';
-% % % current steering
-read_Intan_RHS2000_file(intan_file)
+% intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_004\CRR_NPXL_STIM_002__210507_175941.rhs";
 
+% non current steering
+intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_007\CRR_NPXL_STIM_002__210507_180800.rhs";
+% current steering
+ read_Intan_RHS2000_file(intan_file)
+sample_hi_freq.amp = amplifier_data;
+sample_hi_freq.stim = stim_data;
+intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_016\CRR_NPXL_STIM_002__210507_182150.rhs";
+read_Intan_RHS2000_file(intan_file)
+sample_lo_freq.amp = amplifier_data;
+sample_lo_freq.stim = stim_data;
 %%
 neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
    26, 27, 29, 17, 2,  32, 1,  30, ...
@@ -49,14 +55,22 @@ visualize = ""; % if we need to visualize the result
 probe_params.name = name;
 template_params.name = name;
 %%
-amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe_params, template_params, visualize);
- 
+lo_freq = artifact_Removal(sample_lo_freq.amp, sample_lo_freq.stim, probe_params, template_params, visualize);
+template_params.skip_n = 2;
+hi_freq = artifact_Removal(sample_hi_freq.amp, sample_hi_freq.stim, probe_params, template_params, visualize);
+
+
 %%
 
-STIM_CHANS = find(any(stim_data>0, 2));
-chan = STIM_CHANS(4);
-% chan = 120;
-TRIGDAT = stim_data(STIM_CHANS(1),:)';
-
+STIM_CHANS = find(any(sample_lo_freq.stim, 2));
+% chan = STIM_CHANS(4);
+ chan = 107;
+TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';
+STIM_CHANS = find(any(sample_hi_freq.stim, 2));
+TRIGDAT = sample_hi_freq.stim(STIM_CHANS(1),:)';
 set(groot,'defaultLineLineWidth',4.0)
-Z = ZoomPlot([TRIGDAT*500 amplifier_data_copy(chan,:)', amplifier_data(chan,:)' ]);
+% Z = ZoomPlot([TRIGDAT*500 hi_freq(chan,1:length(sample_lo_freq.amp))', lo_freq(chan,:)' ]);
+Z = ZoomPlot([TRIGDAT*500 sample_hi_freq.amp(chan,:)', hi_freq(chan,:)' ]);
+
+%%
+set(groot,'defaultLineLineWidth',1.0)

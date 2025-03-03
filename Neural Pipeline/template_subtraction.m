@@ -23,10 +23,19 @@ template1 = chn_data;
 template2 = chn_data;
 temp = start:NSTIM;
 temp = temp(or(mod(temp, num_pulse)==0, mod(temp, num_pulse) > skip_n));
+
+
 for i = 1:NSTIM
-    if or(mod(i, num_pulse)==0, mod(i, num_pulse) > skip_n)
+    a = floor((i-1)/num_pulse);
+    
+    movemean_idx = (1+num_pulse*a):(min(num_pulse*(a+1), NSTIM));
+    % if or(mod(i, num_pulse)==0, mod(i, num_pulse) > skip_n)
+        template = movmean(chn_data(movemean_idx, 1:period_avg+prebuffer), 5);
+        template1(i, 1:period_avg+prebuffer) = template(i-num_pulse*a, :) - template(i-num_pulse*a, 1);
         template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp, 1:period_avg+prebuffer), 1);
-    end
+        template2(i, 1:period_avg+prebuffer) = template2(i, 1:period_avg+prebuffer) -template2(i, 1); 
+    % end
+     template1(i, period_avg+prebuffer:end) = linspace(template1(i,period_avg+prebuffer), 0, period-period_avg+1);
     template2(i, period_avg+prebuffer:end) = linspace(template2(i,period_avg+prebuffer), 0, period-period_avg+1);
 end
  

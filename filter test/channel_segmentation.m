@@ -37,7 +37,7 @@ segments.id_non_stim = indices_non_stim;
 segments.id_non_sat = indices_non_sat;
 segments.id_neighbor_stim = indices_neighbor_stim;
 
-% 
+
 % figure
 % scatter(xcoords, ycoords, 'DisplayName', 'Neuropixel Probe Channel Map')
 % hold on
@@ -71,4 +71,4 @@ segments.id_neighbor_stim = indices_neighbor_stim;
 % savepath = fullfile(subfolderDir, figurename);
 % savefig(savepath)
 % close
-% 
+

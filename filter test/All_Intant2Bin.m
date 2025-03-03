@@ -51,7 +51,7 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
     'isstim', true, ... % true if the data is from a stim channel
     'period_avg', 30, ... % number of points to average for the template
-    'start', 20, ... % skip the first number of pulses when calculating the template
+    'start', 1, ... % skip the first number of pulses when calculating the template
     'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
     'skip_n', 1 ...% number of initial pulses to skip to calculate the template
     );
@@ -68,7 +68,8 @@ visualize = ""; % if we need to visualize the result
 session_trigger = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:45];
 % trial_number =[10:17, 40, 43:45];
-trial_number = [];
+trial_number = [1, 7, 13, 19];
+% trial_number = [4, 8, 14, 20];
 file_indices = [];
 % trial_number = [];
 
@@ -83,16 +84,16 @@ end
 
 %%
 if ~isempty(trial_number)
-for i = 1:length(F)
-    % Extract the number from the filename
-    filename = F{i};
-    fileidx = split(filename, ["_","."]);
-    fileNumber = str2double(fileidx(5));
-    % Check if the file number is in the selected ranges
-    if any(fileNumber == trial_number)
-        file_indices = [file_indices, i]; % Add the index to the list
+    for i = 1:length(F)
+        % Extract the number from the filename
+        filename = F{i};
+        fileidx = split(filename, ["_","."]);
+        fileNumber = str2double(fileidx(5));
+        % Check if the file number is in the selected ranges
+        if any(fileNumber == trial_number)
+            file_indices = [file_indices, i]; % Add the index to the list
+        end
     end
-end
 else 
     file_indices = 1:length(F);
 end
@@ -123,11 +124,11 @@ for intan_file_index = 1:length(intan_files)
   
    
     
-    try
-        amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe_params, template_params, visualize);
-    catch 
-        continue
-    end
+    % try
+    amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe_params, template_params, visualize);
+    % catch 
+    %     continue
+    % end
 
     fwrite(fileID,int16(amplifier_data_copy(probe_params.neuropixel_index,:)),'int16');
     session_trigger = [session_trigger board_adc_data(1:2,:)];
@@ -142,7 +143,6 @@ end
     session_trigger = [];
 end
 
-%%
 fclose(fileID);
 % save('session_trigger.mat','session_trigger','-v7.3')
 

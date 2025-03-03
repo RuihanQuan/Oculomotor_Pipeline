@@ -18,20 +18,25 @@ save_neural = 0; % <---set to 1 if you want to save raw neural channels with spi
 % F = dir(fullfile(Path_name, '*_neural.mat'));
 % F = struct2cell(F);
 % F = F(1,:);
-mat_files = uigetdir('\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\', 'choose root folder for _neural.mat files to stitch kilosort 4 result');
+% mat_files = uigetdir('\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\', 'choose root folder for _neural.mat files to stitch kilosort 4 result');
+mat_files = uigetdir(pwd, 'choose root folder for _neural.mat files to stitch kilosort 4 result');
+
 [Path_name, F] = readfolder(mat_files, '*_neural.mat');
 trigger_file_path = uigetdir(pwd, "select folder for session trigger files");
+% bin_file = uigetdir(trigger_file_path, "select .bin file for the processed neural data");
 file_path= uigetdir(pwd, "select folder for kilosort4 results files");
 outputfolder = uigetdir(pwd, "select output folder");
 outputfolder = fullfile(outputfolder, 'seperate_cells');
+% Neural_back = ReadBin(bin_file,128);
 if ~exist(outputfolder, 'file')
     mkdir(outputfolder)
 end
 file_indices = [];
-% trial_number =[10:17, 19, 32:38, 40, 43:47, 49];
+% trial_number =[10:17, 19, 32:38, 40, 43:45];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
-trial_number = [23];
+% trial_number = [4, 8, 14, 20];
+trial_number = [1, 7, 13, 19];
 file_num_list = [];
 for i = 1:length(F)
     % Extract the number from the filename
@@ -66,7 +71,7 @@ segment_marks = cumsum(segment_marks);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 15;
+FR_thr = 10;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -155,9 +160,10 @@ N_clusters = length(cluster_numbers);
 
 %%
 % cd ../
-
+h = waitbar(0, 'Processing...'); % Initialize the progress bar
 segment_mark = 0; % 0 for the first neural data segment
-for file_index = 13:length(file_names)
+counter = 0;
+for file_index = 1:length(file_names)
     segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
@@ -171,6 +177,7 @@ for file_index = 13:length(file_names)
     Data_NStruct = cell(1,length(cluster_numbers));
   
     for cell_index = 1:length(cluster_numbers)
+        counter = counter+1;
         cluster_number = cluster_numbers(cell_index);
         Data = Data_back;
         
@@ -186,7 +193,7 @@ for file_index = 13:length(file_names)
         [~,I] = sort(N,'descend');
         Data.cluster_sites = clusterSites(I);
         Data.Neural_channels = Data.cluster_sites;
-        
+        Data.Neural = Data_back.Neural(:, Data.Neural_channels);
         spktimes = zeros(length(Data.Intan_idx),1);
         idx = ST(idx)-segment_mark;
         idx = idx(idx>=0);
@@ -203,14 +210,17 @@ for file_index = 13:length(file_names)
         
         Data.(['spktimes_' newname]) = spktimes;
         Data.(newname) = sign(sum(reshape(spktimes,[30, Data.N])))';
-        Data.ChannelList(end+1)={newname};
-        try
-            Data.ChannelNames(end+1,:)='                ';
-            Data.ChannelNames(end,1:length(newname)) = newname;
-            Data.ChannelNumbers(end+1)=0;
-        catch ERR
-            disp(ERR)
+        if ~any(strcmp(Data.ChannelList, newname))
+            Data.ChannelList(end+1)={newname};
+            try
+                Data.ChannelNames(end+1,:)='                ';
+                Data.ChannelNames(end,1:length(newname)) = newname;
+                Data.ChannelNumbers(end+1)=0;
+            catch ERR
+                disp(ERR)
+            end
         end
+        
         
         Data.adfreq(end+1)=1000; %this is just other info that needs to be added to work with the analysis gui
         Data.samples(end+1)=Data.samples(1);
@@ -219,17 +229,19 @@ for file_index = 13:length(file_names)
         Data.NumberOfSignals=length(Data.ChannelList);
         Data.Definitions(Data.NumberOfSignals)={['Data.' newname '(1+lat:N)']};
         
-        fr = fr_estimate(Data.(newname),'kaiser',3,1000); %lower cut-off 2*50+1
+        fr = fr_estimate(Data.(newname),'kaiser',10,1000); %lower cut-off 2*50+1
         
         newname = 'fr';
         Data.(newname) = fr;
-        Data.ChannelList(end+1)={newname};
-        try
-            Data.ChannelNames(end+1,:)='                ';
-            Data.ChannelNames(end,1:length(newname)) = newname;
-            Data.ChannelNumbers(end+1)=0;
-        catch ERR
-            disp(ERR)
+        if ~any(strcmp(Data.ChannelList, newname))
+            Data.ChannelList(end+1)={newname};
+            try
+                Data.ChannelNames(end+1,:)='                ';
+                Data.ChannelNames(end,1:length(newname)) = newname;
+                Data.ChannelNumbers(end+1)=0;
+            catch ERR
+                disp(ERR)
+            end
         end
         
         Data.adfreq(end+1)=1000;
@@ -250,7 +262,8 @@ for file_index = 13:length(file_names)
         warning on 
 
         save([outputfolder '\Kilosort4\' trackname '_CELL_' num2str(mainclusterSite) '_kilo_'  num2str(cluster_number-1)  '_' quality{cell_index} '\' file_name],'Data','-v7.3');
-        
+        waitbar(counter/(length(file_names)*length(cluster_numbers)), h, sprintf('Prosessing %s %d%%', file_name, round(cell_index/length(cluster_numbers)*100)));
+
         % Data_NStruct{cell_index} = Data;
     end
     % segment_mark = segment_mark+length(Data.Intan_idx);
@@ -260,4 +273,5 @@ for file_index = 13:length(file_names)
     % mkdir([Path_name '\..\NStruct_cells\Kilosort4\' trackname])
     % warning on
     % save([Path_name '\..\NStruct_cells\Kilosort4\' trackname '\' file_name],'Data_NStruct','-v7.3');
+
 end
