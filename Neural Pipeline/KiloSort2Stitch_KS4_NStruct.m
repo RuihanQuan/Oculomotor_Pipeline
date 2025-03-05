@@ -69,6 +69,11 @@ segment_marks = cumsum(segment_marks);
 [filepath,~,~] = fileparts(filepath);
 [~,trackname,~] = fileparts(filepath);
 
+% read preporcessed data
+fid = fopen([file_path '\temp_wh.dat'], 'r');
+preprocessed_neural = fread(fid, [128, inf], 'int16');
+fclose(fid);
+preprocessed_neural = double(preprocessed_neural');
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
 FR_thr = 10;
@@ -193,7 +198,9 @@ for file_index = 1:length(file_names)
         [~,I] = sort(N,'descend');
         Data.cluster_sites = clusterSites(I);
         Data.Neural_channels = Data.cluster_sites;
-        Data.Neural = Data_back.Neural(:, Data.Neural_channels);
+%         Data.Neural = Data_back.Neural(:, Data.Neural_channels);
+        sample = Data.Intan_idx + segment_mark;
+        Data.Neural = preprocessed_neural(sample, Data.Neural_channels);
         spktimes = zeros(length(Data.Intan_idx),1);
         idx = ST(idx)-segment_mark;
         idx = idx(idx>=0);
