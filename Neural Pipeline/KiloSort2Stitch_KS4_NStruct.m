@@ -23,8 +23,11 @@ mat_files = uigetdir(pwd, 'choose root folder for _neural.mat files to stitch ki
 
 [Path_name, F] = readfolder(mat_files, '*_neural.mat');
 trigger_file_path = uigetdir(pwd, "select folder for session trigger files");
-% bin_file = uigetdir(trigger_file_path, "select .bin file for the processed neural data");
+
 file_path= uigetdir(pwd, "select folder for kilosort4 results files");
+%%
+[bin_file, location] = uigetfile('*.bin', "select .bin file that store the artifact removed neural data");
+%%
 outputfolder = uigetdir(pwd, "select output folder");
 outputfolder = fullfile(outputfolder, 'seperate_cells');
 % Neural_back = ReadBin(bin_file,128);
@@ -64,6 +67,16 @@ for i = 2:length(file_indices)+1
 end
 segment_marks = cumsum(segment_marks);
 
+fid = fopen([file_path '\temp_wh.dat'], 'r');
+preprocessed_neural = fread(fid, [128, inf],'int16');
+fclose(fid);
+preprocessed_neural = double(preprocessed_neural');
+% 
+% fid2 = fopen([location bin_file], 'r');
+% artifact_removed = fread(fid2, [128, inf],'int16');
+% fclose(fid2);
+% artifact_removed = double(artifact_removed');
+
 
 [filepath,~,~] = fileparts(Path_name);
 [filepath,~,~] = fileparts(filepath);
@@ -71,7 +84,7 @@ segment_marks = cumsum(segment_marks);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 10;
+FR_thr = 20;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -192,8 +205,14 @@ for file_index = 1:length(file_names)
         N = N(clusterSites);
         [~,I] = sort(N,'descend');
         Data.cluster_sites = clusterSites(I);
-        Data.Neural_channels = Data.cluster_sites;
+        sample =Data.Intan_idx+segment_mark;
+        Data.Neural_channels = [Data.cluster_sites; 1; 2];
+        artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites(1),sample);
+        preprocessed = preprocessed_neural(sample, Data.Neural_channels(1));
         Data.Neural = Data_back.Neural(:, Data.Neural_channels);
+       
+        Data.Neural = [Data.Neural, artifact_removed, preprocessed];
+        
         spktimes = zeros(length(Data.Intan_idx),1);
         idx = ST(idx)-segment_mark;
         idx = idx(idx>=0);
@@ -243,7 +262,34 @@ for file_index = 1:length(file_names)
                 disp(ERR)
             end
         end
-        
+
+        % sample =Data.Intan_idx+segment_mark;
+        % newname = 'preprocessed';
+        % Data.(newname) = preprocessed_neural(sample, Data.Neural_channels(1));
+        % if ~any(strcmp(Data.ChannelList, newname))
+        %     Data.ChannelList(end+1)={newname};
+        %     try
+        %         Data.ChannelNames(end+1,:)='                ';
+        %         Data.ChannelNames(end,1:length(newname)) = newname;
+        %         Data.ChannelNumbers(end+1)=0;
+        %     catch ERR
+        %         disp(ERR)
+        %     end
+        % end
+        % newname = 'artifact_removed';
+        % % Data.(newname) = artifact_removed(sample, Data.Neural_channels(1));
+        % % Data.(newname) = ReadBin([location bin_file],128,Data.cluster_sites(1),sample);
+        % if ~any(strcmp(Data.ChannelList, newname))
+        %     Data.ChannelList(end+1)={newname};
+        %     try
+        %         Data.ChannelNames(end+1,:)='                ';
+        %         Data.ChannelNames(end,1:length(newname)) = newname;
+        %         Data.ChannelNumbers(end+1)=0;
+        %     catch ERR
+        %         disp(ERR)
+        %     end
+        % end
+
         Data.adfreq(end+1)=1000;
         Data.samples(end+1)=Data.samples(1);
         Data.SampleCounts=Data.samples;

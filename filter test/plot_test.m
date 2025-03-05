@@ -40,7 +40,7 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 
 template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
     'isstim', true, ... % true if the data is from a stim channel
-    'period_avg', 30, ... % number of points to average for the template
+    'period_avg', 75, ... % number of points to average for the template
     'start', 30, ... % skip the first number of pulses when calculating the template
     'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
     'skip_n', 2 ...% number of initial pulses to skip to calculate the template
@@ -62,15 +62,18 @@ hi_freq = artifact_Removal(sample_hi_freq.amp, sample_hi_freq.stim, probe_params
 
 %%
 
-STIM_CHANS = find(any(sample_lo_freq.stim, 2));
+
 % chan = STIM_CHANS(4);
- chan = 107;
-TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';
+ chan = 81;
+
 STIM_CHANS = find(any(sample_hi_freq.stim, 2));
 TRIGDAT = sample_hi_freq.stim(STIM_CHANS(1),:)';
 set(groot,'defaultLineLineWidth',4.0)
 % Z = ZoomPlot([TRIGDAT*500 hi_freq(chan,1:length(sample_lo_freq.amp))', lo_freq(chan,:)' ]);
 Z = ZoomPlot([TRIGDAT*500 sample_hi_freq.amp(chan,:)', hi_freq(chan,:)' ]);
+ STIM_CHANS = find(any(sample_lo_freq.stim, 2));
+TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';
+% Z = ZoomPlot([TRIGDAT*500 sample_lo_freq.amp(chan,:)', lo_freq(chan,:)' ]);
 
 %%
 set(groot,'defaultLineLineWidth',1.0)

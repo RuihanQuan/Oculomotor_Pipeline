@@ -27,13 +27,13 @@ temp2 = 1:NSTIM;
 temp2 = setdiff(temp2, temp);
 
 for i = 1:NSTIM
-    % a = floor((i-1)/num_pulse);
+    a = floor((i-1)/num_pulse);
     % 
-    % movemean_idx = (skip_n+1+num_pulse*a):(min(num_pulse*(a+1), NSTIM));
+    movemean_idx = (skip_n+1+num_pulse*a):(min(num_pulse*(a+1), NSTIM));
     % if or(mod(i, num_pulse)==0, mod(i, num_pulse) > skip_n)
         % template = movmean(chn_data(movemean_idx, 1:period_avg+prebuffer), 5);
         % template1(i, 1:period_avg+prebuffer) = template(i-num_pulse*a-skip_n, :)- template(i-num_pulse*a-skip_n, 1) ;% 
-        template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp, 1:period_avg+prebuffer), 1);
+        template2(i, 1:period_avg+prebuffer) = mean(chn_data(movemean_idx, 1:period_avg+prebuffer), 1);
         template2(i, 1:period_avg+prebuffer) = template2(i, 1:period_avg+prebuffer) -template2(i, 1); 
     % else
     % 
