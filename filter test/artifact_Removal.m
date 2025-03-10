@@ -15,7 +15,7 @@ function amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe
         trigs = trigs2;
     end
     trigs = trigs(1:2:end);
-     
+    
     NSTIM = length(trigs);
 
     chan_segments = channel_segmentation(STIM_CHANS, probe_params);

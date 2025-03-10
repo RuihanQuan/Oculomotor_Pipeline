@@ -9,7 +9,22 @@
 clc
 clear all
 
-
+neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
+   26, 27, 29, 17, 2,  32, 1,  30, ...
+    31, 39, 3,  36, 38, 28, 35, 37, ...
+    4,  34, 16, 33, 15, 14, 13, 12, ...
+    11, 10, 9,  8,  7,  6,  5,  63, ...
+    59, 56, 64, 58, 55, 40, 57, 54, ...                                                                                               
+    41, 60, 53, 43, 61, 52, 44, 62, ...
+    51, 42, 47, 50, 45, 48, 49, 46, ...
+    65, 96, 69, 66, 95, 68, 67, 94, ...
+    70, 83, 93, 72, 84, 92, 71, 85, ...
+    91, 73, 88, 90, 81, 87, 89, 82, ...
+    86, 108, 107, 106,105,104,103,102,...
+    101,100,99, 98, 80, 97, 79, 109,...
+    76, 78, 117,75, 77, 110,74, 114,...
+    115,112,113,111,128,116,118,119,...
+    120,121,122,123,124,125,126,127];
 save_neural = 0; % <---set to 1 if you want to save raw neural channels with spikes from a cluster
 
 % [file_names, Path_name] = uigetfile('.mat', 'MultiSelect', 'on'); %select files in "Renamed folder that have been segmented
@@ -39,7 +54,7 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [1, 7, 13, 19];
+trial_number = [];
 file_num_list = [];
 for i = 1:length(F)
     % Extract the number from the filename
@@ -66,11 +81,11 @@ for i = 2:length(file_indices)+1
     segment_marks(i) = length(trigger.session_trigger);
 end
 segment_marks = cumsum(segment_marks);
-
-fid = fopen([file_path '\temp_wh.dat'], 'r');
-preprocessed_neural = fread(fid, [128, inf],'int16');
-fclose(fid);
-preprocessed_neural = double(preprocessed_neural');
+% 
+% fid = fopen([file_path '\temp_wh.dat'], 'r');
+% preprocessed_neural = fread(fid, [128, inf],'int16');
+% fclose(fid);
+% preprocessed_neural = double(preprocessed_neural');
 % 
 % fid2 = fopen([location bin_file], 'r');
 % artifact_removed = fread(fid2, [128, inf],'int16');
@@ -84,7 +99,7 @@ preprocessed_neural = double(preprocessed_neural');
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 20;
+FR_thr = 10;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -207,8 +222,12 @@ for file_index = 1:length(file_names)
         Data.cluster_sites = clusterSites(I);
         sample =Data.Intan_idx+segment_mark;
         Data.Neural_channels = [Data.cluster_sites; 1; 2];
-        artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites(1),sample);
-        preprocessed = preprocessed_neural(sample, Data.Neural_channels(1));
+        chan = find(neuropixel_index == Data.cluster_sites(1));
+
+        artifact_removed = ReadBin([location bin_file],128,chan, sample);
+        
+        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites(1), sample);
+
         Data.Neural = Data_back.Neural(:, Data.Neural_channels);
        
         Data.Neural = [Data.Neural, artifact_removed, preprocessed];
