@@ -6,7 +6,7 @@ sat_thresh = params.sat_thresh;
 neuropixel_index = params.neuropixel_index;
 
 
-if ~isstring(chanMap) && ~ischar(chanMap)
+if isempty(chanMap)
     chanMap = 'ImecPrimateStimRec128_kilosortChanMap.mat';
 end
 load(chanMap, 'xcoords', 'ycoords');

@@ -42,18 +42,18 @@ function amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe
     for chan = [chan_segments.stim, chan_segments.neighbor_stim]
         template_params.isstim = true;
         if ismember(chan, visualize_channels)
-            amplifier_data_copy(chan, :) = template_subtraction(amplifier_data(chan, :), trigs, chan, template_params);
+            amplifier_data_copy(chan, :) = template_subtraction_ICA(amplifier_data(chan, :), trigs, chan, template_params);
         else
-            amplifier_data_copy(chan, :) = template_subtraction(amplifier_data(chan, :), trigs, 0, template_params);
+            amplifier_data_copy(chan, :) = template_subtraction_ICA(amplifier_data(chan, :), trigs, 0, template_params);
         end
     end
 
     for chan = chan_segments.non_stim
         template_params.isstim = false;
         if ismember(chan, visualize_channels)
-            amplifier_data_copy(chan, :) = template_subtraction(amplifier_data(chan, :), trigs, chan, template_params);
+            amplifier_data_copy(chan, :) = template_subtraction_ICA(amplifier_data(chan, :), trigs, chan, template_params);
         else
-            amplifier_data_copy(chan, :) = template_subtraction(amplifier_data(chan, :), trigs, 0, template_params);
+            amplifier_data_copy(chan, :) = template_subtraction_ICA(amplifier_data(chan, :), trigs, 0, template_params);
         end
     end
     else
