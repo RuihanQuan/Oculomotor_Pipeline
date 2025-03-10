@@ -99,7 +99,7 @@ segment_marks = cumsum(segment_marks);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 20;
+FR_thr = 10;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -226,7 +226,7 @@ for file_index = 1:length(file_names)
 
         artifact_removed = ReadBin([location bin_file],128,chan, sample);
         
-        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,chan, sample);
+        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites(1), sample);
 
         Data.Neural = Data_back.Neural(:, Data.Neural_channels);
        

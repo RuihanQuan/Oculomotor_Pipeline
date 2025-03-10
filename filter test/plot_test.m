@@ -5,7 +5,7 @@ clear all
 %%
 % non current steering
 intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_007\CRR_NPXL_STIM_002__210507_180800.rhs";
-intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_002\CRR_NPXL_STIM_002__210507_175340.rhs";
+% intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_002\CRR_NPXL_STIM_002__210507_175340.rhs";
 % current steering
  read_Intan_RHS2000_file(intan_file)
 sample_hi_freq.amp = amplifier_data;
@@ -41,9 +41,9 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 
 template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
     'isstim', true, ... % true if the data is from a stim channel
-    'period_avg', 30, ... % number of points to average for the template
-    'start', 40, ... % skip the first number of pulses when calculating the template
-    'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
+    'period_avg', 75, ... % number of points to average for the template
+    'start', 1, ... % skip the first number of pulses when calculating the template
+    'buffer', 1, ... % thenumber of points before each oulse to be considered in calculating the template
     'skip_n', 1 ...% number of initial pulses to skip to calculate the template
     );
 visualize = ""; % if we need to visualize the result 
@@ -62,22 +62,23 @@ hi_freq = artifact_Removal(sample_hi_freq.amp, sample_hi_freq.stim, probe_params
 
 %%
 
-load('D:\filter_test\1_7_reg_mov_session_trigger\session_trigger_1.mat')
-% chan = STIM_CHANS(4);
- chan = 78;
-chan_npxl = find(neuropixel_index == chan);
-load("D:\filter_test\seg1_reg_skip1\seperate_cells\Kilosort4\seperate_cells_CELL_81_kilo_105_good\007-16channels-50ms-400hz-80uA_Neural.mat")
-seg_mark = length(session_trigger);
-sample = Data.Intan_idx+seg_mark;
-artifact_removed = ReadBin("D:\filter_test\seg1_reg_skip1\all_files_seg1_reg_skip1.bin",128,chan_npxl, sample);
+% load('D:\filter_test\1_7_reg_mov_session_trigger\session_trigger_1.mat')
+% % chan = STIM_CHANS(4);
+%  chan = 78;
+% chan_npxl = find(neuropixel_index == chan);
+% load("D:\filter_test\seg1_reg_skip1\seperate_cells\Kilosort4\seperate_cells_CELL_81_kilo_105_good\007-16channels-50ms-400hz-80uA_Neural.mat")
+% seg_mark = length(session_trigger);
+% sample = Data.Intan_idx+seg_mark;
+% artifact_removed = ReadBin("D:\filter_test\seg1_reg_skip1\all_files_seg1_reg_skip1.bin",128,chan_npxl, sample);
 
 %%
-chan = 78;
+chan = 85;
+chan_npxl = find(neuropixel_index == chan);
 STIM_CHANS = find(any(sample_hi_freq.stim, 2));
 TRIGDAT = sample_hi_freq.stim(STIM_CHANS(1),:)';
 set(groot,'defaultLineLineWidth',4.0)
 % Z = ZoomPlot([TRIGDAT*500 hi_freq(chan,1:length(sample_lo_freq.amp))', lo_freq(chan,:)' ]);
-Z = ZoomPlot([TRIGDAT*500 sample_hi_freq.amp(chan,:)' ]);
+Z = ZoomPlot([TRIGDAT*500 sample_hi_freq.amp(chan_npxl,:)', hi_freq(chan_npxl, :)' ]);
 % Z = ZoomPlot([ artifact_removed, Data.Neural(:,end)]);
  STIM_CHANS = find(any(sample_lo_freq.stim, 2));
 TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';

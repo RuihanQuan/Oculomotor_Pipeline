@@ -28,28 +28,28 @@ temp2 = setdiff(temp2, temp);
 
 for i = 1:NSTIM
 %     a = floor((i-1)/num_pulse);
-    % 
 %     movemean_idx = (skip_n+1+num_pulse*a):(min(num_pulse*(a+1), NSTIM));
 %     template = movmean(chn_data(movemean_idx, 1:period_avg+prebuffer), 5);
     if or(mod(i, num_pulse)==0, mod(i, num_pulse) > skip_n)
-        
+%         
 %         template1(i, 1:period_avg+prebuffer) = template(i-num_pulse*a-skip_n, :)- template(i-num_pulse*a-skip_n, 1);%  
         template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp, 1:period_avg+prebuffer), 1);
          % 
-%     else
+    else
+
 %     % 
 % %         template = mean(chn_data(temp2, 1:period_avg+prebuffer));
 %         template1(i, 1:period_avg+prebuffer) = template(1, :); % - template(1, 1)
 %         % template2(i, 1:period_avg+prebuffer) = chn_data(i, 1:period_avg+prebuffer);
-%         template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp2, 1:period_avg+prebuffer), 1);
-%         template2(i, 1:period_avg+prebuffer) = template2(i, 1:period_avg+prebuffer) ; % -template2(i, 1)
-    end
-%     template1(i, period_avg+prebuffer:end) = linspace(template1(i,period_avg+prebuffer), 0, period-period_avg+1);
+        template2(i, 1:period_avg+prebuffer) = mean(chn_data(temp2, 1:period_avg+prebuffer), 1);
+%        template2(i, 1:period_avg+prebuffer) = template2(i, 1:period_avg+prebuffer) ; % -template2(i, 1)
+     end
+    % template1(i, period_avg+prebuffer:end) = linspace(template1(i,period_avg+prebuffer), 0, period-period_avg+1);
     template2(i, 1:period_avg+prebuffer) = template2(i, 1:period_avg+prebuffer)-template2(i, 1) ;
     template2(i, period_avg+prebuffer:end) = linspace(template2(i,period_avg+prebuffer), 0, period-period_avg+1);
 end
  
-
+% 
 % if isstim
 %     template = template1;
 % else
