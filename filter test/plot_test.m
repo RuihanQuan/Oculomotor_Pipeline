@@ -41,10 +41,10 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 
 template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
     'isstim', true, ... % true if the data is from a stim channel
-    'period_avg', 75, ... % number of points to average for the template
-    'start', 1, ... % skip the first number of pulses when calculating the template
-    'buffer', 1, ... % thenumber of points before each oulse to be considered in calculating the template
-    'skip_n', 1 ...% number of initial pulses to skip to calculate the template
+    'period_avg',30, ... % number of points to average for the template
+    'start', 40, ... % skip the first number of pulses when calculating the template
+    'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
+    'skip_n', 0 ...% number of initial pulses to skip to calculate the template
     );
 visualize = ""; % if we need to visualize the result 
 % "stim": visualize only result of stim channels
@@ -72,17 +72,17 @@ hi_freq = artifact_Removal(sample_hi_freq.amp, sample_hi_freq.stim, probe_params
 % artifact_removed = ReadBin("D:\filter_test\seg1_reg_skip1\all_files_seg1_reg_skip1.bin",128,chan_npxl, sample);
 
 %%
-chan = 85;
+chan = 78;
 chan_npxl = find(neuropixel_index == chan);
 STIM_CHANS = find(any(sample_hi_freq.stim, 2));
 TRIGDAT = sample_hi_freq.stim(STIM_CHANS(1),:)';
 set(groot,'defaultLineLineWidth',4.0)
 % Z = ZoomPlot([TRIGDAT*500 hi_freq(chan,1:length(sample_lo_freq.amp))', lo_freq(chan,:)' ]);
-Z = ZoomPlot([TRIGDAT*500 sample_hi_freq.amp(chan_npxl,:)', hi_freq(chan_npxl, :)' ]);
+Z = ZoomPlot([sample_hi_freq.amp(chan_npxl,:)'-hi_freq(chan_npxl, :)', hi_freq(chan_npxl, :)' ]);
 % Z = ZoomPlot([ artifact_removed, Data.Neural(:,end)]);
- STIM_CHANS = find(any(sample_lo_freq.stim, 2));
-TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';
-% Z = ZoomPlot([TRIGDAT*500 sample_lo_freq.amp(chan,:)', lo_freq(chan,:)' ]);
+%  STIM_CHANS = find(any(sample_lo_freq.stim, 2));
+% TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';
+%  Z = ZoomPlot([TRIGDAT*500 sample_lo_freq.amp(chan,:)', lo_freq(chan,:)' ]);
 
 %%
 set(groot,'defaultLineLineWidth',1.0)

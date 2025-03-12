@@ -49,19 +49,19 @@ chan2 =80;
 chan_npxl2 = find(neuropixel_index==chan2);
 chan3 = 77;
 chan_npxl3 = find(neuropixel_index==chan3);
-sample = 1+ segment_marks(3): segment_marks(4);
-artifact_removed = ReadBin([location bin_file],128,chan_npxl,sample);
-raw_neural = ReadBin("D:\filter_test\seg1_no_filter\all_files_no_filter.bin", 128, chan_npxl, sample);
-artifact_removed2 = ReadBin([location bin_file],128,chan_npxl2,sample);
-artifact_removed3 = ReadBin([location bin_file],128,chan_npxl3,sample);
+sample = 1+ segment_marks(2): segment_marks(3);
+artifact_removed = ReadBin([location bin_file],128,chan,sample);
+raw_neural = ReadBin("D:\filter_test\seg1_no_filter\all_files_no_filter.bin", 128, chan, sample);
+artifact_removed2 = ReadBin([location bin_file],128,chan,sample);
+artifact_removed3 = ReadBin([location bin_file],128,chan,sample);
 preprocessed_filtered = ReadBin([file_path '\temp_wh.dat'], 128, chan, sample);
 
 preprocessed_raw = ReadBin("D:\filter_test\seg1_no_filter\kilosort4\temp_wh.dat", 128, chan, sample);
 set(groot,'defaultLineLineWidth',5.0)
 %%
-artifact_removed_reg = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan_npxl, sample);
-artifact_removed_reg2 = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan_npxl2, sample);
-artifact_removed_reg3 = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan_npxl3, sample);
+artifact_removed_reg = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan, sample);
+artifact_removed_reg2 = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan, sample);
+artifact_removed_reg3 = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan, sample);
 preprocessed_reg = ReadBin("D:\filter_test\seg1_25104\kilosort4\temp_wh.dat", 128, chan, sample);
 % Z = ZoomPlot([artifact_removed_reg, artifact_removed_reg3, preprocessed_reg ]);
  Z = ZoomPlot([artifact_removed, artifact_removed3, preprocessed_filtered ]);
@@ -73,7 +73,7 @@ Z = ZoomPlot([preprocessed_filtered, preprocessed_reg, preprocessed_raw]);
 legend('whitened (sliding mean template)', 'Whitened (regular mean template)', 'whitened (raw)')
 
 %%
-artifact_removed_reg = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan_npxl, sample);
+artifact_removed_reg = ReadBin("D:\filter_test\seg1_25104\all_files_seg1_25104.bin", 128, chan, sample);
 Z = ZoomPlot([artifact_removed, artifact_removed_reg, raw_neural ]);
 legend('target channel (sliding mean template)', 'target channel (regular mean template)',  'target channel (raw)')
 
