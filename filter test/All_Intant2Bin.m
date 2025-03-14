@@ -50,10 +50,10 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 
 template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
     'isstim', true, ... % true if the data is from a stim channel
-    'period_avg', 13, ... % number of points to average for the template
-    'start', 1, ... % skip the first number of pulses when calculating the template
-    'buffer', 1, ... % thenumber of points before each oulse to be considered in calculating the template
-    'skip_n', 1 ...% number of initial pulses to skip to calculate the template
+    'period_avg', 30, ... % number of points to average for the template
+    'start', 40, ... % skip the first number of pulses when calculating the template
+    'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
+    'skip_n', 0 ...% number of initial pulses to skip to calculate the template
     );
 visualize = ""; % if we need to visualize the result 
 % "stim": visualize only result of stim channels
