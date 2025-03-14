@@ -1,5 +1,5 @@
 
-function artifact_across_chan = extract_artifact_PCA(pulse_chan_data,  stim_chans, numNeighbor, chanMap)
+function artifact_across_chan = extract_artifact_PCA(pulse_chan_data,  stim_chans, nPCs, chanMap)
     
     
     if isempty(chanMap)
@@ -7,10 +7,9 @@ function artifact_across_chan = extract_artifact_PCA(pulse_chan_data,  stim_chan
     end
     load(chanMap, 'xcoords', 'ycoords');
     points = [xcoords, ycoords];
-    [neighbors,~] = knnsearch(points, points,'K',numNeighbor,'Distance','chebychev');
     artifact_across_chan = pulse_chan_data;
 
-    [coeff, score, latent] = pca(pulse_chan_data);
+    [coeff, score, latent] = pca(pulse_chan_data, nPCs);
 
     % Keep components explaining 99% variance
     explainedVariance = cumsum(latent) / sum(latent);
