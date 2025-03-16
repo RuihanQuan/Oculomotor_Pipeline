@@ -1,16 +1,16 @@
 %%
 clc
 clear all
-% intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_004\CRR_NPXL_STIM_002__210507_175941.rhs";
+intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_004\CRR_NPXL_STIM_002__210507_175941.rhs";
 %%
 % non current steering
-intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_007\CRR_NPXL_STIM_002__210507_180800.rhs";
+% intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_007\CRR_NPXL_STIM_002__210507_180800.rhs";
 % intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_002\CRR_NPXL_STIM_002__210507_175340.rhs";
 % current steering
  read_Intan_RHS2000_file(intan_file)
 sample_hi_freq.amp = amplifier_data;
 sample_hi_freq.stim = stim_data;
-intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_016\CRR_NPXL_STIM_002__210507_182150.rhs";
+intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_016\CRR_NPXL_STIM_002__210507_182150.rhs";
 read_Intan_RHS2000_file(intan_file)
 sample_lo_freq.amp = amplifier_data;
 sample_lo_freq.stim = stim_data;

@@ -1,4 +1,4 @@
-function artifact_across_chan = extract_artifact_ICA(pulse_chan_data, stim_chans, numComponents, numNeighbor, chanMap)
+function artifact_across_chan = extract_artifact_ICA(pulse_chan_data, period, numComponents, numNeighbor, chanMap)
     
     
     if isempty(chanMap)
@@ -19,8 +19,8 @@ function artifact_across_chan = extract_artifact_ICA(pulse_chan_data, stim_chans
        
 
         weights = sum(abs(W), 1);
-        [~, artifactidx] = maxk(weights,1);
-        % S(:,artifactidx) = 0;
+        [~, artifactidx] = maxk(weights,2);
+        S(:,artifactidx) = 0;
         % figure
         % subplot(3,1,1)
         % plot(S(:,artifactidx)*W(1, artifactidx)')
@@ -32,14 +32,18 @@ function artifact_across_chan = extract_artifact_ICA(pulse_chan_data, stim_chans
         % plot(S*W')
         % title('mixed')
         temp = repmat(mu, length(S), 1);
-        mixed_artifact = (S(:,artifactidx)*W(:,artifactidx)')*invM+temp;
+        mixed_artifact = (S*W')*invM+temp;
         % figure
         % plot(pulse_chan_data(1:300, neighbors(i, 2)))
         % hold on
         % plot(mixed_artifact(1:300,2), 'LineWidth',2.0)
         % hold off
-
-        
+        temp = 1:period:length(pulse_chan_data);
+        temp2 = period:period:length(pulse_chan_data);
+        amp = pulse_chan_data(temp, neighbors(i, 1));
+        for j = 1:length(temp)
+            mixed_artifact(temp(j):temp2(j), 1) = mixed_artifact(temp(j):temp2(j), 1) + amp(j);
+        end
         artifact_across_chan(:, i) = mixed_artifact(:, 1);
     end
         % Get the transformation matrix (weights)
