@@ -4,7 +4,7 @@ clear all
 % intan_file = "E:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_004\CRR_NPXL_STIM_002__210507_175941.rhs";
 %%
 % non current steering
-intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_007\CRR_NPXL_STIM_002__210507_180800.rhs";
+intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_023\CRR_NPXL_STIM_002__210507_183327.rhs";
 % intan_file = "D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_002\CRR_NPXL_STIM_002__210507_175340.rhs";
 % current steering
  read_Intan_RHS2000_file(intan_file)
@@ -78,7 +78,7 @@ STIM_CHANS = find(any(sample_hi_freq.stim, 2));
 TRIGDAT = sample_hi_freq.stim(STIM_CHANS(1),:)';
 set(groot,'defaultLineLineWidth',4.0)
 % Z = ZoomPlot([TRIGDAT*500 hi_freq(chan,1:length(sample_lo_freq.amp))', lo_freq(chan,:)' ]);
-Z = ZoomPlot([sample_hi_freq.amp(chan_npxl,:)'-hi_freq(chan_npxl, :)', hi_freq(chan_npxl, :)' ]);
+Z = ZoomPlot([sample_hi_freq.amp(chan_npxl,:)', hi_freq(chan_npxl, :)' ]);
 % Z = ZoomPlot([ artifact_removed, Data.Neural(:,end)]);
 %  STIM_CHANS = find(any(sample_lo_freq.stim, 2));
 % TRIGDAT = sample_lo_freq.stim(STIM_CHANS(1),:)';
