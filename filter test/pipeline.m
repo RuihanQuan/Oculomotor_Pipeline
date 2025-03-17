@@ -24,8 +24,8 @@ t_count = zeros(1, length(file_names));
 
 %% start of loop
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
-% for file_index = 23:length(file_names)
-file_index = 4;
+for file_index =1:length(file_names)
+
 file_name = file_names{file_index};
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
 
@@ -196,4 +196,4 @@ save([outputfolder '\filtered\' file_name '_filtered.mat'], 'Data', '-v7.3');
 
 waitbar(file_index/length(file_names), h, sprintf('Prosessed %s %d%%', file_name, round(file_index/length(file_names)*100)));
 
-% end
+end
