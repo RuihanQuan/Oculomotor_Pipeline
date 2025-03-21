@@ -7,7 +7,7 @@ clc
 % file_directory = uigetdir('\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\', 'select the file that contains the raw _neural.mat data');
 file_directory = uigetdir("D:\neuraldata\Caesar_002\seperate_cells\Kilosort4\Project 1 - Occulomotor Kinematics_CELL_29_kilo_46_good", 'select the file that contains the raw _neural.mat data');
 
-outputfolder = uigetdir("D:\neuraldata\CRR_002_ERAASR_rev2", 'select output folder');
+outputfolder = uigetdir("D:\neuraldata\CRR_002_ERAASR_rev", 'select output folder');
 %%
 if ~exist([outputfolder '\filtered'], 'dir')
     mkdir(fullfile(outputfolder, 'filtered'))
@@ -132,18 +132,18 @@ opts.cleanUpsampleBy = 1; % upsample by this ratio during cleaning
 opts.samplesPerPulse = period; % 3 ms pulses
 opts.nPulses = num_pulse;
 
-opts.nPC_channels = 24;
-opts.nPC_trials = floor(num_repeats*0.2);
-opts.nPC_pulses = num_pulse*0.2;
+opts.nPC_channels = 12;
+opts.nPC_trials = 2;
+opts.nPC_pulses = 6;
 
 opts.omit_bandwidth_channels = 0;
-opts.omit_bandwidth_trials = 0;
+opts.omit_bandwidth_trials = 1;
 opts.omit_bandwidth_pulses = 1;
 
 opts.alignPulsesOverTrain = true; % do a secondary alignment within each train, in case you think there is pulse to pulse jitter. Works best with upsampling
 opts.pcaOnlyOmitted = true; % if true, build PCs only from non-omitted channels/trials/pulses. if false, build PCs from all but set coefficients to zero post hoc
 
-opts.cleanOverChannelsIndividualTrials = true;
+opts.cleanOverChannelsIndividualTrials = false;
 opts.cleanOverPulsesIndividualChannels = false;
 opts.cleanOverTrialsIndividualChannels = false;
 

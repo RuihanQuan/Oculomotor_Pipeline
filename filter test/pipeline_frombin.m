@@ -1,61 +1,67 @@
-clear all
-close all
-clc
+% clear all
+% close all
+% clc
 %% reading file
 % file_name = '001-16channels-50ms-200hz-80uA';
 % file_name = '001-16channels-50ms-200hz-80uA';
 % file_directory = uigetdir('\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\', 'select the file that contains the raw _neural.mat data');
-file_directory = uigetdir("D:\neuraldata\Caesar_002\seperate_cells\Kilosort4\Project 1 - Occulomotor Kinematics_CELL_29_kilo_46_good", 'select the file that contains the raw _neural.mat data');
-
-outputfolder = uigetdir("D:\neuraldata\CRR_002_ERAASR_rev2", 'select output folder');
+[rawDatafile, file_directory] = uigetfile(fullfile("D:\neuraldata\Caesar_002\bin_files_ERAASR", '*.bin'), 'select the .bin file that contains the raw data for ERAASR');
+[stimDatafile, file_directory2] = uigetfile(fullfile("D:\neuraldata\Caesar_002\bin_files_ERAASR", '*.bin'), 'select the .bin file that contains the raw stim data for ERAASR');
+trigger_file_path = uigetdir("D:\neuraldata\Caesar_002\bin_files_ERAASR", "select folder for session trigger files");
+[~, trigger_files] = readfolder(trigger_file_path, 'session_trigger_*');
+neural_directory = uigetdir("D:\neuraldata\Caesar_002\seperate_cells\Kilosort4\Project 1 - Occulomotor Kinematics_CELL_29_kilo_46_good", 'select the file that contains the raw _neural.mat data');
+outputfolder = uigetdir("D:\neuraldata\CRR_002_ERAASR_rev3", 'select output folder');
 %%
 if ~exist([outputfolder '\filtered'], 'dir')
     mkdir(fullfile(outputfolder, 'filtered'))
 end
+%% sort the session triggers with respect to the last figure
+fileNumberlist = [];
+for i = 1:length(trigger_files)
+        % Extract the number from the filename
+        filename = trigger_files{i};
+        fileidx = split(filename, ["_",".", "-"]);
+        fileNumber = str2double(fileidx(3));
+        fileNumberlist = [fileNumberlist fileNumber];
+end
+
+[~, sorted_idx] = sort(fileNumberlist);
+trigger_files = trigger_files(sorted_idx);
+%% extract sgement marks
+file_num_list = [];
+segment_marks = zeros(1, length(trigger_files)+1);
+for i = 2:length(trigger_files)+1
+    trigger_file_name = trigger_files{i-1};
+    fileidx = split(trigger_file_name, ["-","_","."]);
+    fileNumber = str2double(fileidx(3));
+    file_num_list = [file_num_list, fileNumber];
+    session_trigger = fullfile(trigger_file_path, trigger_file_name);
+    trigger = load(session_trigger);
+    segment_marks(i) = length(trigger.session_trigger);
+end
+segment_marks = cumsum(segment_marks);
 %%
-file_names = dir(fullfile(file_directory, '*_Neural.mat'));
+
+t_count = zeros(1, length(file_num_list));
+file_names = dir(fullfile(neural_directory, '*_Neural.mat'));
 
 file_names = struct2cell(file_names);
 file_names = file_names(1,:);
-
 file_names = strrep(file_names, '_Neural.mat', '');
-
-t_count = zeros(1, length(file_names));
-
 %% start of loop
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
-for file_index =1:length(file_names)
+fileID = fopen(fullfile(outputfolder, ['all_files_filtered_ERAASR.bin']),'w');
+for file_index =1:length(file_num_list)
 
-file_name = file_names{file_index};
+sample = segment_marks(file_index)+1:segment_marks(file_index+1);
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
+rawData = ReadBin([file_directory rawDatafile],128,[1:128], sample);
 
-load([file_directory,'\', file_name, '_Neural.mat']); % matlab file
-metaChannelData = Data.Neural(:, 129:131);
-totalDataLen = size(metaChannelData, 1);
-dataFileDir = [file_directory,'\', file_name, '.bin'];
-% read_Intan_RHS2000_file("D:\neuraldata\Caesar_002\Intan_Sorted\CRR_NPXL_STIM_002_023\CRR_NPXL_STIM_002__210507_183327.rhs")
-% neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
-%    26, 27, 29, 17, 2,  32, 1,  30, ...
-%     31, 39, 3,  36, 38, 28, 35, 37, ...
-%     4,  34, 16, 33, 15, 14, 13, 12, ...
-%     11, 10, 9,  8,  7,  6,  5,  63, ...
-%     59, 56, 64, 58, 55, 40, 57, 54, ...                                                                                               
-%     41, 60, 53, 43, 61, 52, 44, 62, ...
-%     51, 42, 47, 50, 45, 48, 49, 46, ...
-%     65, 96, 69, 66, 95, 68, 67, 94, ...
-%     70, 83, 93, 72, 84, 92, 71, 85, ...
-%     91, 73, 88, 90, 81, 87, 89, 82, ...
-%     86, 108, 107, 106,105,104,103,102,...
-%     101,100,99, 98, 80, 97, 79, 109,...
-%     76, 78, 117,75, 77, 110,74, 114,...
-%     115,112,113,111,128,116,118,119,...
-%     120,121,122,123,124,125,126,127];
-% rawData = amplifier_data(neuropixel_index, :)';
-rawData = Data.Neural(:, 1:128);
+stimData = ReadBin([file_directory2 stimDatafile],1,1, sample);
 % rawData = ERASER.ReadBin(dataFileDir , 128, [1:128], [1:30*Data.N]);
 %% extract trial by time by channel data
 % first extract segments
-TRIGDAT =Data.Neural(:, 131);
+TRIGDAT =stimData;
 % STIM_CHANS = find(any(stim_data~=0, 2));
 % TRIGDAT = stim_data(STIM_CHANS(1),:)';
 trigs1 = find(diff(TRIGDAT) < 0); 
@@ -82,14 +88,14 @@ for i = 1:NSTIM
     segment = (1 + trigs(i) ):(period+ trigs(i)); 
     segments_aligned = [segments_aligned; segment];  
 end
-stim_chans =Data.stim_channels;
+
 %% generate tensor
 fs = 30000; % samplig rate at 30kHz
 fc = 300; % highpass at 300 Hz
 sample_chans = 1:128;
 sample_trials = 1:num_repeats;
-prebuffer = 100*30;
-postbuffer =100*30;
+prebuffer = 30*30;
+postbuffer =30*30;
 raw_signal_segs = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
 
 for i = 1:length(sample_trials)
@@ -147,7 +153,7 @@ opts.cleanOverChannelsIndividualTrials = true;
 opts.cleanOverPulsesIndividualChannels = false;
 opts.cleanOverTrialsIndividualChannels = false;
 
-opts.cleanPostStim = false; % clean the post stim window using a single PCR over channels
+opts.cleanPostStim = true; % clean the post stim window using a single PCR over channels
 
 opts.showFigures = false; % useful for debugging and seeing well how the cleaning works
 opts.plotTrials = [2, 12]; % which trials to plot in figures, can be vector
@@ -164,7 +170,8 @@ tic
 t_count(i) = toc;
 
 %% stitch the filtered back to the raw data
-filteredData= rawData;
+filteredData= rawData(:, 1:128);
+sample_chans = 1:128;
 for i = 1:length(sample_trials)
     sample_trial = sample_trials(i);
     for j = 1:length(sample_chans)
@@ -188,12 +195,18 @@ end
 %%
 % Z = ZoomPlot([ Data.Neural(:, 131)*500,dataCleanByChannel(:, 78) ]);
 %%
-Data_back = Data;
-Data = Data_back;
-Data.opts = opts;
-Data.Neural(:, 1:128) = filteredData;
-save([outputfolder '\filtered\' file_name '_filtered.mat'], 'Data', '-v7.3');
+file_name = file_names{file_index};
+% file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
 
+load([neural_directory,'\', file_name, '_Neural.mat']); % matlab file
+Data.opts = opts;
+Data.Neural(:, 1:128) = filteredData(Data.Intan_idx, 1:128);
+save([outputfolder '\filtered\' file_name '_filtered.mat'], 'Data', '-v7.3');
+fwrite(fileID,int16(filteredData(:, 1:128)'),'int16');
 waitbar(file_index/length(file_names), h, sprintf('Prosessed %s %d%%', file_name, round(file_index/length(file_names)*100)));
 
+
+
 end
+fclose(fileID);
+

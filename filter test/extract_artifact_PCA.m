@@ -13,7 +13,7 @@ function artifact_across_chan = extract_artifact_PCA(pulse_chan_data,  stim_chan
 
     % Keep components explaining 99% variance
     explainedVariance = cumsum(latent) / sum(latent);
-    numComponents = find(explainedVariance > 0.96, 1);
+    numComponents = find(explainedVariance > 0.80, 1);
     
     % Reduce and reconstruct
     X_reduced = score(:, 1: numComponents) * coeff(:, 1: numComponents)';

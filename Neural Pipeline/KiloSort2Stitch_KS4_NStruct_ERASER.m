@@ -37,7 +37,7 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [1:22, 24];
+trial_number = [1:4];
 file_num_list = [];
 for i = 1:length(F)
     % Extract the number from the filename
@@ -65,7 +65,7 @@ file_names = F(file_indices);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 13;
+FR_thr = 15;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};

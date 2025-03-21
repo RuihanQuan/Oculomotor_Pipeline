@@ -3,6 +3,7 @@
 %% initialize
 folder_dir = uigetdir(pwd,'choose a root folder for all sorted intan files');
 [datafolder, F] = readfolder(folder_dir, "*_STIM_*");
+
 outputfolder = uigetdir(pwd, "select folder to store the output");
 prompt = {'name session .bin file: '};
 dlgtitle = 'bin file naming';
@@ -40,43 +41,18 @@ neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
 %     120,121,122,123,124,125,126,127];
 
 
-probe_params = struct('dist', 0, ... % the largest distance between stim channel neighbors and stim channels
-    'chanMap', 'ImecPrimateStimRec128_042421.mat', ... % the channel mapping we are using should be a .mat file this is also used for kilosort4
-    'sat_thresh', 0, ... % The maximum value of amplifier data before saturation, 0 for not segmenting the channels based on saturation
-    'neuropixel_index', neuropixel_index, ... % the channel indexing for neuropixel. 
-    'name', '', ... % name the rhs file name
-    'outputfolder', outputfolder ...
-    );
-
-template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
-    'isstim', true, ... % true if the data is from a stim channel
-    'period_avg', 30, ... % number of points to average for the template
-    'start', 40, ... % skip the first number of pulses when calculating the template
-    'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
-    'skip_n', 0 ...% number of initial pulses to skip to calculate the template
-    );
-visualize = ""; % if we need to visualize the result 
-% "stim": visualize only result of stim channels
-% "neighbor-stim": visualize the stim channels and its neighboring
-% channels
-% "non-stim": only non-stim channels
-% "all": all the channels
-% "": none
-%%
-
 
 session_trigger = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:45];
 % trial_number =[10:17, 40, 43:45];
-trial_number = [1, 7, 13, 19];
+trial_number = [];
 % trial_number = [4, 8, 14, 20];
 file_indices = [];
 % trial_number = [];
 
 
-
 fileID = fopen(fullfile(outputfolder, ['all_files_' temp '.bin']),'w');
-
+stimfile = fopen(fullfile(outputfolder, ['all_files_stim_' temp '.bin']),'w');
 session_trigger_folder =fullfile(outputfolder, [temp '_session_trigger']);
 if ~exist(session_trigger_folder, 'dir')
     mkdir(session_trigger_folder)
@@ -113,7 +89,7 @@ end
 
 for trial_index = file_indices
     intan_path = fullfile(datafolder, F{trial_index});
-    fileidx = split(F{trial_index}, ["_","."]);
+    fileidx = split(F{trial_index}, ["_",".", "-"]);
     fileNumber = str2double(fileidx(5));
     % intan = dir(intan_path);
     % 
@@ -132,20 +108,21 @@ for intan_file_index = 1:length(intan_files)
     template_params.name = name;
     disp(['Processing intant files from trial: '   num2str(fileNumber) ': ' num2str(name)])
     read_Intan_RHS2000_file(intan_file);
-  
-   
+    STIM_CHANS = find(any(stim_data~=0, 2));
+    if ~isempty(STIM_CHANS)
+        TRIGDAT = stim_data(STIM_CHANS(1),:)';
+    else
+        TRIGDAT = stim_data(1,:)';
+    end
     
-    % try
-%     amplifier_data_copy = amplifier_data;
-    amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe_params, template_params, visualize);
-    % catch 
-    %     continue
-    % end
-
-    fwrite(fileID,int16(amplifier_data_copy(probe_params.neuropixel_index,:)),'int16');
+  
+    
+ 
+    fwrite(fileID,int16(amplifier_data(neuropixel_index,:)),'int16');
+    fwrite(stimfile,int16(TRIGDAT),'int16');
     session_trigger = [session_trigger board_adc_data(1:2,:)];
     
-    clearvars -except session_trigger fileID probe_params template_params  visualize_channels intan_file_index intan_path F intan_files trial_index datafolder visualize session_trigger_folder fileNumber
+    clearvars -except stimfile session_trigger fileID neuropixel_index  intan_file_index intan_path F intan_files trial_index datafolder session_trigger_folder fileNumber
     
 end
     
@@ -154,7 +131,7 @@ end
     save(savepath,'session_trigger','-v7.3')
     session_trigger = [];
 end
-
+fclose(stimfile);
 fclose(fileID);
 % save('session_trigger.mat','session_trigger','-v7.3')
 

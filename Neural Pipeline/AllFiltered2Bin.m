@@ -9,7 +9,7 @@ definput = {'all_files_'};
 temp = inputdlg(prompt,dlgtitle,fieldsize,definput);
 temp = cell2mat(temp);
 temp(isspace(temp)) = '_';
-trial_number = [1:22, 24];
+trial_number = [1:4];
 file_indices = [];
 %% read files
 if ~isempty(trial_number)
@@ -31,7 +31,7 @@ fileID = fopen(fullfile(outputfolder, ['all_files_' temp '.bin']),'w');
 for trial_index = file_indices
     neural_path = fullfile(datafolder, F{trial_index});
     load(neural_path);
-    fwrite(fileID,int16(Data.Neural(:, 1:128)),'int16');
+    fwrite(fileID,int16(Data.Neural(:, 1:128)'),'int16');
 end
   
 fclose(fileID);

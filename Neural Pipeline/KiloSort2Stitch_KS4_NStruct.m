@@ -38,8 +38,21 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [1, 7, 13,19];
+trial_number = [];
 file_num_list = [];
+%% sort the folder names with respect to the 5th character 
+fileNumberlist = [];
+for i = 1:length(F)
+        % Extract the number from the filename
+        filename = F{i};
+        fileidx = split(filename, ["-","_","."]);
+        fileNumber = str2double(fileidx(1));
+        fileNumberlist = [fileNumberlist fileNumber];
+end
+
+[~, sorted_idx] = sort(fileNumberlist);
+F = F(sorted_idx);
+%%
 for i = 1:length(F)
     % Extract the number from the filename
     filename = F{i};
@@ -56,6 +69,7 @@ for i = 1:length(F)
         file_num_list = [file_num_list, fileNumber];
     end
 end
+
 file_names = F(file_indices);
 segment_marks = zeros(1, length(file_num_list)+1);
 for i = 2:length(file_indices)+1
@@ -175,7 +189,7 @@ N_clusters = length(cluster_numbers);
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
 segment_mark = 0; % 0 for the first neural data segment
 counter = 0;
-for file_index = 1:length(file_names)
+for file_index = 1: 14% length(file_names)
     segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
@@ -205,14 +219,13 @@ for file_index = 1:length(file_names)
         [~,I] = sort(N,'descend');
         Data.cluster_sites = clusterSites(I);
         sample =Data.Intan_idx+segment_mark;
+        Data.Neural = Data_back.Neural(:, Data.cluster_sites);
         Data.Neural_channels = [Data.cluster_sites; 1; 2];
 
         artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites(1), sample);
         
         preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites(1), sample);
 
-        Data.Neural = Data_back.Neural(:, Data.Neural_channels);
-       
         Data.Neural = [Data.Neural, artifact_removed, preprocessed];
         
         spktimes = zeros(length(Data.Intan_idx),1);
