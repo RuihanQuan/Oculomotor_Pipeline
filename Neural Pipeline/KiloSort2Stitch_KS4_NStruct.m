@@ -38,7 +38,7 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [1, 7, 13,19];
+trial_number = [7];
 file_num_list = [];
 for i = 1:length(F)
     % Extract the number from the filename
@@ -83,7 +83,7 @@ segment_marks = cumsum(segment_marks);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 10;
+FR_thr = 15;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -204,15 +204,15 @@ for file_index = 1:length(file_names)
         N = N(clusterSites);
         [~,I] = sort(N,'descend');
         Data.cluster_sites = clusterSites(I);
-        sample =Data.Intan_idx+segment_mark;
-        Data.Neural_channels = [Data.cluster_sites; 1; 2];
+        sample =Data.Intan_idx+segment_mark- Data.Intan_idx(1)+1 ;% 
+        Data.Neural_channels = [Data.cluster_sites; Data.cluster_sites; Data.cluster_sites];
 
-        artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites(1), sample);
+        artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites, sample);
         
-        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites(1), sample);
+        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites, sample);
 
-        Data.Neural = Data_back.Neural(:, Data.Neural_channels);
-       
+        Data.Neural = Data_back.Neural(:, Data.cluster_sites);
+        
         Data.Neural = [Data.Neural, artifact_removed, preprocessed];
         
         spktimes = zeros(length(Data.Intan_idx),1);
@@ -221,7 +221,7 @@ for file_index = 1:length(file_names)
         % disp('segment_index')
         % disp(length(idx))
         
-        [~,idx,~] = intersect(Data.Intan_idx,idx);
+        [~,idx,~] = intersect(Data.Intan_idx-Data.Intan_idx(1)+1,idx); % 
         % disp('index_intersect')
         % disp(length(idx))
         spktimes(idx) = 1;

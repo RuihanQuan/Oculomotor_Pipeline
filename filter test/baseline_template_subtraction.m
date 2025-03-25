@@ -97,7 +97,15 @@ switch flag
         end
 
     case 2
-        average_across_chan = movmean(chn_pulse_data, 3, 2);
+        average_across_chan = chn_pulse_data;
+        
+        for i = 1:128
+            pulse_seg = average_across_chan(:,i);
+            pulse_seg = reshape(pulse_seg, num_repeats*num_pulse, length(1:period_avg+prebuffer));
+            template_across_pulse = movmean(pulse_seg, 5, 2);        
+            average_across_chan(:, i) = reshape(template_across_pulse', [], 1);
+        end
+        average_across_chan = movmean(average_across_chan, 3, 2);
 
         template_across_chan = amplifier_data_copy(segments_linear, :);
         template_period = length(1:period_avg+prebuffer);
@@ -106,11 +114,13 @@ switch flag
         for i= 1:num_pulse*num_repeats
             temp_seg = (1:period_avg+prebuffer) + (i-1)*template_period;
             average_seg = (1:period_avg+prebuffer) + (i-1)*period;
-            template_across_chan(average_seg, :) = average_across_chan(temp_seg, :) ;% - average_across_chan(temp_seg(1), :)
+            template_across_chan(average_seg, :) = average_across_chan(temp_seg, :) ;% - average_across_chan(temp_seg(1), :) 
             for j = 1:128
-                template_across_chan(average_seg(end)+1:average_seg(1)+period-1, j) = linspace(template_across_chan(average_seg(end),j), average_across_chan(temp_seg(1), j),period-template_period);
+
+                template_across_chan(average_seg(end)+1:average_seg(1)+period-1, j) = linspace(template_across_chan(average_seg(end),j), template_across_chan(average_seg(1),j),period-template_period);
             end
         end
+
 
     case 3
         chn_pulse_data = amplifier_data_copy(segments_linear, 1:128);

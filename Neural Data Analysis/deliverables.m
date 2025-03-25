@@ -13,8 +13,8 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [1, 7, 13, 19];
-file_num_list = [1, 7, 13, 19];
+trial_number = [1:7];
+file_num_list = [1:7];
 
 segment_marks = zeros(1, length(file_num_list)+1);
 for i = 2:length(file_num_list)+1
