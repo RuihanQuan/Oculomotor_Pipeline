@@ -13,8 +13,8 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [1:7];
-file_num_list = [1:7];
+trial_number = [7];
+file_num_list = [7];
 
 segment_marks = zeros(1, length(file_num_list)+1);
 for i = 2:length(file_num_list)+1
@@ -32,11 +32,15 @@ load([location_neural, neural_file]);
 trial_num = find(file_num_list == fileNumber);
 chan = Data.cluster_sites(1);
 segment = 1+ segment_marks(trial_num): segment_marks(trial_num+1);
+segment2 = Data.Intan_idx-Data.Intan_idx(1)+1;
+if length(segment2)<= length(segment)
+    segment = segment2;
+end
 artifact_removed = ReadBin([location bin_file],128,chan,segment);
 % preprocessed_filtered = ReadBin([file_path '\temp_wh.dat'], 128, chan, segment);
 
 %% preprocess compared
-[neural_file, location_neural] = uigetfile('*_neural.mat', 'select the file that store the unit activity');
+
 fileidx = split(neural_file, ["-","_","."]);
 fileNumber = str2double(fileidx(1));
 load([location_neural, neural_file]);
@@ -44,41 +48,43 @@ load([location_neural, neural_file]);
 set(groot,'defaultLineLineWidth',1.0)
 segments_data = struct2cell(Data.segments);
 samples = segments_data{1};
-buffer = 10000;
-n = 10;
-sample  = samples(n, 2)*30-buffer/2: samples(n, 2)*30+buffer;
+buffer = 2000;
+n = 13;
+sample  = samples(n, 2)*30-buffer: samples(n, 2)*30+buffer;
 if size(Data.Neural, 2)>=128
     chan_neural = Data.Neural_channels(1);
 else
     chan_neural = 1;
 end
 figure 
-subplot(3,2,1)
+subplot(3,1,1)
 plot(sample /30000, Data.Neural(sample, chan_neural), 'DisplayName','Target Channel')
 hold on
-% plot(sample /30000,artifact_removed(sample), 'DisplayName','artifact removed')
+plot(sample /30000,artifact_removed(sample), 'DisplayName','artifact removed')
 % plot(sample /30000,preprocessed_filtered(sample), 'DisplayName','whitened (kilsoort4)')
-xline(samples(n, 1)*30/30000, 'DisplayName','stimulation onset','LineWidth',2.0, 'LineStyle','--','Color','r')
-xline(samples(n, 2)*30/30000, 'DisplayName','stimulation end','LineWidth',2.0, 'LineStyle','--','Color','r')
+xline(samples(n, 1)/1000, 'DisplayName','stimulation onset','LineWidth',2.0, 'LineStyle','--','Color','r')
+xline(samples(n, 2)/1000, 'DisplayName','stimulation end','LineWidth',2.0, 'LineStyle','--','Color','r')
 
 box off
 hold off
-legend('FontSize',20)
+legend('FontSize',16)
 xlabel('time(s)')
 ylabel('Whitened Neural Recording', 'FontSize',16)
-set(gca,'ytick',[])
-title(['Spike Sorting result Caesar Session 2 experiment # ' num2str(fileNumber) ' stim trial # ' num2str(n)], 'FontSize',30)
+xlim([(sample(1)-50)/30000 (sample(end)+50)/30000])
+% set(gca,'ytick',[])
+title(['Spike Sorting result Caesar Session 2 experiment # ' num2str(fileNumber) ' stim trial # ' num2str(n)], 'FontSize',20)
 
-subplot(3,2,3)
+subplot(3,1,2)
 plot(sample /30000,Data.spktimes_ua(sample), 'DisplayName','Unit Activity','LineWidth',2.0)
 xline(samples(n, 1)*30/30000, 'DisplayName','stimulation onset','LineWidth',2.0, 'LineStyle','--','Color','r')
 xline(samples(n, 2)*30/30000, 'DisplayName','stimulation end','LineWidth',2.0, 'LineStyle','--','Color','r')
 set(gca,'ytick',[])
 ylabel('unit activity', 'FontSize',16)
+xlim([(sample(1)-50)/30000 (sample(end)+50)/30000])
 box off
 
-subplot(3,2,5)
-sample_lo_rate = samples(n, 2) -round(buffer/2/30): samples(n, 2) + round(buffer/30);
+subplot(3,1,3)
+sample_lo_rate = samples(n, 2) -round(buffer/30): samples(n, 2) + round(buffer/30);
 set(gca,'ytick',[])
 plot(sample_lo_rate/1000, Data.ehp_left_3d(sample_lo_rate),'LineWidth',2.0)
 xline(samples(n, 1)/1000, 'DisplayName','stimulation onset','LineWidth',2.0, 'LineStyle','--','Color','r')
@@ -87,6 +93,7 @@ box off
 % ylim([-40 20])
 xlabel('time (s)', 'FontSize',16)
 ylabel('EHP (deg)', 'FontSize',16)
+xlim([(sample(1)-50)/30000 (sample(end)+50)/30000])
 
 
 %% rastor plot
