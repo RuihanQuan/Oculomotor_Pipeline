@@ -95,7 +95,7 @@ fc = 300; % highpass at 300 Hz
 sample_chans = 1:128;
 sample_trials = 1:num_repeats;
 prebuffer = 30*30;
-postbuffer =30*30;
+postbuffer =150*30;
 raw_signal_segs = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
 
 for i = 1:length(sample_trials)
@@ -144,18 +144,18 @@ opts.nPC_pulses = num_pulse*0.2;
 
 opts.omit_bandwidth_channels = 0;
 opts.omit_bandwidth_trials = 0;
-opts.omit_bandwidth_pulses = 1;
+opts.omit_bandwidth_pulses = 0;
 
 opts.alignPulsesOverTrain = true; % do a secondary alignment within each train, in case you think there is pulse to pulse jitter. Works best with upsampling
 opts.pcaOnlyOmitted = true; % if true, build PCs only from non-omitted channels/trials/pulses. if false, build PCs from all but set coefficients to zero post hoc
 
-opts.cleanOverChannelsIndividualTrials = true;
+opts.cleanOverChannelsIndividualTrials = false;
 opts.cleanOverPulsesIndividualChannels = false;
 opts.cleanOverTrialsIndividualChannels = false;
 
 opts.cleanPostStim = true; % clean the post stim window using a single PCR over channels
 
-opts.showFigures = false; % useful for debugging and seeing well how the cleaning works
+opts.showFigures = true; % useful for debugging and seeing well how the cleaning works
 opts.plotTrials = [2, 12]; % which trials to plot in figures, can be vector
 opts.plotPulses = [1, 5, 10]; % which pulses to plot in figures, can be vector
 opts.figurePath = outputfolder; % folder to save the figures
@@ -180,8 +180,9 @@ for i = 1:length(sample_trials)
         train_seg = reshape(segments_aligned(sample_pulses, :)', 1, []);
         prebuffer_seg = -prebuffer+train_seg(1):train_seg(1)-1;
         postbuffer_seg = train_seg(end)+1:postbuffer+train_seg(end);
-        segment = [prebuffer_seg, train_seg, postbuffer_seg];
-        filteredData(segment, sample_chan) =  dataCleaned(i, :, j);
+        segment = [prebuffer_seg, train_seg]; % , postbuffer_seg
+        filteredData(segment, sample_chan) =  dataCleaned(i, 1:length(segment), j);
+        filteredData(postbuffer_seg, sample_chan) =  filteredData(postbuffer_seg, sample_chan) - linspace(filteredData(postbuffer_seg(1), sample_chan), 0, length(postbuffer_seg))';
     end
 
 end
@@ -193,7 +194,7 @@ end
 % dataByTrialChannelHP = ERAASR.highPassFilter(dataByTrialChannel, opts.Fs, 'cornerHz', 40, 'order', 4, ...
 %     'subtractFirstSample', true, 'filtfilt', true, 'showProgress', true);
 %%
-% Z = ZoomPlot([ Data.Neural(:, 131)*500,dataCleanByChannel(:, 78) ]);
+% Z = ZoomPlot([ rawData(:, 78), filteredData(:, 78)]);
 %%
 file_name = file_names{file_index};
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';

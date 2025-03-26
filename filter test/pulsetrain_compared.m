@@ -1,6 +1,8 @@
 %%
 [filtered, location] = uigetfile("E:\neuraldata\CRR_002_ERASER\filtered\", 'select filtered data');
+
 Data_filtered = load([location filtered]);
+Data_filtered_ERAASR = load(['D:\bin_test_output\CRR_002_ERAASR\filtered\' filtered]);
 filename = strrep(filtered, '_filtered', '_Neural');
 Data_raw = load(['D:\neuraldata\Caesar_002\seperate_cells\Kilosort4\Project 1 - Occulomotor Kinematics_CELL_7_kilo_11_good\' filename]);
 
@@ -49,16 +51,18 @@ stim_chans = Data_raw.Data.stim_channels;
 fs = 30000; % samplig rate at 30kHz
 fc = 300; % highpass at 300 Hz
 sample_chans = [stim_chans(2:3), 78, 107];
-sample_trials = 1:3:num_repeats;
+sample_trials = 1:11:num_repeats;
 prebuffer = 1000;
 postbuffer = 1000;
 template_ERASER = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
+template_ERAASR = template_ERASER;
 raw_signal_segs = template_ERASER;
 template_mean_tensor = template_ERASER;
 template_movmean_tensor = template_ERASER;
 template_PCA_tensor = template_ERASER;
 
 ERASER_tensor = template_ERASER;
+ERAASR_tensor = template_ERASER;
 mean_tensor = template_ERASER;
 movmean_tensor = template_ERASER;
 PCA_tensor = template_ERASER;
@@ -79,7 +83,9 @@ for i = 1:length(sample_trials)
         template_mean_tensor(i, :, j) = Data_raw.Data.Neural(segment, sample_chan) - Data_mean(segment, sample_chan);
         template_movmean_tensor(i, :, j) = Data_raw.Data.Neural(segment, sample_chan) - Data_movmean(segment, sample_chan);
         template_PCA_tensor(i, :, j) = Data_raw.Data.Neural(segment, sample_chan) - Data_PCA(segment, sample_chan);
+        template_ERAASR(i, :, j) = Data_raw.Data.Neural(segment, sample_chan) - Data_filtered_ERAASR.Data.Neural(segment, sample_chan);
         
+        ERAASR_tensor(i, :, j) = highpass(Data_filtered_ERAASR.Data.Neural(segment, sample_chan), fc, fs);
         ERASER_tensor(i, :, j) = highpass(Data_filtered.Data.Neural(segment, sample_chan), fc, fs);
         mean_tensor(i, :, j) = highpass(Data_mean(segment, sample_chan), fc, fs);
         movmean_tensor(i, :, j) = highpass(Data_movmean(segment, sample_chan), fc, fs);
@@ -101,14 +107,14 @@ end
 % 7, 19, 21
 % pulse train trial 12 (middle part )
 % 2 stim channel 2 
-n = 5;
+n = 2;
 sample_trial = sample_trials(n); % 5th in sample_trials
-tag = 'Experiment 4 low freq low current ';
+% tag = 'Experiment 4 low freq low current ';
 % tag = 'Experiment 2 low freq high current ';
 % tag = 'Experiment 8 high freq low current ';
-% tag = 'Experiment 7 high freq high current ';
+tag = 'Experiment 19 high freq high current ';
 figure('Name',tag)
-tiledlayout(5, length(sample_chans))
+tiledlayout(6, length(sample_chans))
 for i = 1:length(sample_chans)
     nexttile;
     sample_chan = sample_chans(i);
@@ -180,26 +186,57 @@ for i = 1:length(sample_chans)
 
 end
 
+for i = 1:length(sample_chans)
+    nexttile;
+    sample_chan = sample_chans(i);
+    
+    plot( ERAASR_tensor(n, :, i), 'LineWidth',2.0, 'Color','b')
+    title('filtered with ERAASR template', 'FontSize',16);
+    set(gca,'xticklabel',[])
+    xline(prebuffer,'LineStyle','--', 'Color','r')
+    xline(length(raw_signal_segs(n, :, i)) - postbuffer,'LineStyle','--', 'Color','r')
+    xlim([-1 length(raw_signal_segs(n, :, i)) + 1])
+    ylim([-700, 700]);
+    box off
+
+end
+
 %% one pulse train with template overlayed 
-n1 = 5;
-n2 = 3;
+n1 = 2;
+n2 = 4;
 sample_trial = sample_trials(n1);
 sample_chan = sample_chans(n2);
 
 figure('Name',tag)
 plot(raw_signal_segs(n1, :, n2), 'LineWidth', 3.0, 'Color','b', 'DisplayName','Raw Data')
 hold on
-plot( template_ERASER(n1, :, n2), 'LineWidth', 1.0, 'Color','r', 'DisplayName','ERAASR Template')
+plot( template_ERASER(n1, :, n2), 'LineWidth', 1.0, 'Color','r', 'DisplayName','ERASER Template')
 xline(prebuffer,'LineStyle','--', 'Color','r', 'DisplayName','Stim onset')
 xline(length(raw_signal_segs(n, :, i)) - postbuffer,'LineStyle','--', 'Color','k', 'DisplayName','Stim offset')
 hold off
-title(sprintf(['Experiment # %i Channel # %i, Pulse Train # %i Template Developed with ERASER' ], 4, sample_chan, sample_trial), 'FontSize',16);
+title(sprintf([' Channel # %i, Pulse Train # %i Template Developed with ERASER' ], sample_chan, sample_trial), 'FontSize',16);
 xlim([-1 length(raw_signal_segs(n, :, i)) + 1])
 ylim([-700, 700]);
 legend()
 box off
 set(gca,'xticklabel',[])
 %%
+
+figure('Name',tag)
+plot(raw_signal_segs(n1, :, n2), 'LineWidth', 3.0, 'Color','b', 'DisplayName','Raw Data')
+hold on
+plot( template_ERAASR(n1, :, n2), 'LineWidth', 1.0, 'Color','r', 'DisplayName','ERAASR Template')
+xline(prebuffer,'LineStyle','--', 'Color','r', 'DisplayName','Stim onset')
+xline(length(raw_signal_segs(n, :, i)) - postbuffer,'LineStyle','--', 'Color','k', 'DisplayName','Stim offset')
+hold off
+title(sprintf([' Channel # %i, Pulse Train # %i Template Developed with ERAASR' ], sample_chan, sample_trial), 'FontSize',16);
+xlim([-1 length(raw_signal_segs(n, :, i)) + 1])
+ylim([-700, 700]);
+legend()
+box off
+set(gca,'xticklabel',[])
+%%
+
 figure('Name',tag)
 plot(raw_signal_segs(n1, :, n2), 'LineWidth', 3.0, 'Color','b', 'DisplayName','Raw Data')
 hold on

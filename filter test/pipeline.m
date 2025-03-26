@@ -21,6 +21,18 @@ file_names = file_names(1,:);
 file_names = strrep(file_names, '_Neural.mat', '');
 
 t_count = zeros(1, length(file_names));
+%% sort the folder names with respect to the 5th character 
+fileNumberlist = [];
+for i = 1:length(file_names)
+        % Extract the number from the filename
+        filename = file_names{i};
+        fileidx = split(filename, ["-","_","."]);
+        fileNumber = str2double(fileidx(1));
+        fileNumberlist = [fileNumberlist fileNumber];
+end
+
+[~, sorted_idx] = sort(fileNumberlist);
+F = file_names(sorted_idx);
 
 %% start of loop
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
@@ -30,6 +42,7 @@ file_name = file_names{file_index};
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
 
 load([file_directory,'\', file_name, '_Neural.mat']); % matlab file
+
 metaChannelData = Data.Neural(:, 129:131);
 totalDataLen = size(metaChannelData, 1);
 dataFileDir = [file_directory,'\', file_name, '.bin'];
@@ -51,8 +64,8 @@ dataFileDir = [file_directory,'\', file_name, '.bin'];
 %     115,112,113,111,128,116,118,119,...
 %     120,121,122,123,124,125,126,127];
 % rawData = amplifier_data(neuropixel_index, :)';
-rawData = Data.Neural(:, 1:128);
-% rawData = ERASER.ReadBin(dataFileDir , 128, [1:128], [1:30*Data.N]);
+% rawData = Data.Neural(:, 1:128);
+rawData = ReadBin(dataFileDir , 128, [1:128], [1:30*Data.N]);
 %% extract trial by time by channel data
 % first extract segments
 TRIGDAT =Data.Neural(:, 131);

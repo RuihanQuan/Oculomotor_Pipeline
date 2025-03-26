@@ -41,7 +41,7 @@ neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
 
 
 probe_params = struct('dist', 0, ... % the largest distance between stim channel neighbors and stim channels
-    'chanMap', "ImecPrimateStimRec128_042421.mat", ... % the channel mapping we are using should be a .mat file this is also used for kilosort4
+    'chanMap', 'ImecPrimateStimRec128_042421.mat', ... % the channel mapping we are using should be a .mat file this is also used for kilosort4
     'sat_thresh', 0, ... % The maximum value of amplifier data before saturation, 0 for not segmenting the channels based on saturation
     'neuropixel_index', neuropixel_index, ... % the channel indexing for neuropixel. 
     'name', '', ... % name the rhs file name
@@ -50,8 +50,8 @@ probe_params = struct('dist', 0, ... % the largest distance between stim channel
 
 template_params = struct( 'NSTIM', 0, ...  % number of stim pulses
     'isstim', true, ... % true if the data is from a stim channel
-    'period_avg', 25, ... % number of points to average for the template
-    'start', 1, ... % skip the first number of pulses when calculating the template
+    'period_avg', 30, ... % number of points to average for the template
+    'start', 40, ... % skip the first number of pulses when calculating the template
     'buffer', 0, ... % thenumber of points before each oulse to be considered in calculating the template
     'skip_n', 0 ...% number of initial pulses to skip to calculate the template
     );
@@ -69,6 +69,7 @@ session_trigger = [];
 % trial_number =[10:17, 19, 32:38, 40, 43:45];
 % trial_number =[10:17, 40, 43:45];
 trial_number = [1, 7, 13, 19];
+% trial_number = [4, 8, 14, 20];
 file_indices = [];
 % trial_number = [];
 
@@ -80,19 +81,30 @@ session_trigger_folder =fullfile(outputfolder, [temp '_session_trigger']);
 if ~exist(session_trigger_folder, 'dir')
     mkdir(session_trigger_folder)
 end
+%% sort the folder names with respect to the 5th character 
+fileNumberlist = [];
+for i = 1:length(F)
+        % Extract the number from the filename
+        filename = F{i};
+        fileidx = split(filename, ["_","."]);
+        fileNumber = str2double(fileidx(5));
+        fileNumberlist = [fileNumberlist fileNumber];
+end
 
+[~, sorted_idx] = sort(fileNumberlist);
+F = F(sorted_idx);
 %%
 if ~isempty(trial_number)
-for i = 1:length(F)
-    % Extract the number from the filename
-    filename = F{i};
-    fileidx = split(filename, ["_","."]);
-    fileNumber = str2double(fileidx(5));
-    % Check if the file number is in the selected ranges
-    if any(fileNumber == trial_number)
-        file_indices = [file_indices, i]; % Add the index to the list
+    for i = 1:length(F)
+        % Extract the number from the filename
+        filename = F{i};
+        fileidx = split(filename, ["_","."]);
+        fileNumber = str2double(fileidx(5));
+        % Check if the file number is in the selected ranges
+        if any(fileNumber == trial_number)
+            file_indices = [file_indices, i]; % Add the index to the list
+        end
     end
-end
 else 
     file_indices = 1:length(F);
 end
@@ -123,9 +135,12 @@ for intan_file_index = 1:length(intan_files)
   
    
     
-
+    % try
+%     amplifier_data_copy = amplifier_data;
     amplifier_data_copy = artifact_Removal(amplifier_data, stim_data, probe_params, template_params, visualize);
-   
+    % catch 
+    %     continue
+    % end
 
     fwrite(fileID,int16(amplifier_data_copy(probe_params.neuropixel_index,:)),'int16');
     session_trigger = [session_trigger board_adc_data(1:2,:)];
@@ -140,7 +155,6 @@ end
     session_trigger = [];
 end
 
-%%
 fclose(fileID);
 % save('session_trigger.mat','session_trigger','-v7.3')
 

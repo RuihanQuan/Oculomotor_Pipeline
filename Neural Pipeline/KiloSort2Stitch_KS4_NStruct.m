@@ -189,7 +189,7 @@ N_clusters = length(cluster_numbers);
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
 segment_mark = 0; % 0 for the first neural data segment
 counter = 0;
-for file_index = 1: 14% length(file_names)
+for file_index = 1: length(file_names)
     segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
@@ -220,11 +220,11 @@ for file_index = 1: 14% length(file_names)
         Data.cluster_sites = clusterSites(I);
         sample =Data.Intan_idx+segment_mark;
         Data.Neural = Data_back.Neural(:, Data.cluster_sites);
-        Data.Neural_channels = [Data.cluster_sites; 1; 2];
+        Data.Neural_channels = [Data.cluster_sites; Data.cluster_sites; Data.cluster_sites];
 
-        artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites(1), sample);
+        artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites, sample);
         
-        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites(1), sample);
+        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites, sample);
 
         Data.Neural = [Data.Neural, artifact_removed, preprocessed];
         

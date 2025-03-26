@@ -9,8 +9,20 @@ definput = {'all_files_'};
 temp = inputdlg(prompt,dlgtitle,fieldsize,definput);
 temp = cell2mat(temp);
 temp(isspace(temp)) = '_';
-trial_number = [1:4];
+trial_number = [];
 file_indices = [];
+%% sort the folder names with respect to the 5th character 
+fileNumberlist = [];
+for i = 1:length(F)
+        % Extract the number from the filename
+        filename = F{i};
+        fileidx = split(filename, ["_",".", "-"]);
+        fileNumber = str2double(fileidx(1));
+        fileNumberlist = [fileNumberlist fileNumber];
+end
+
+[~, sorted_idx] = sort(fileNumberlist);
+F = F(sorted_idx);
 %% read files
 if ~isempty(trial_number)
 for i = 1:length(F)
