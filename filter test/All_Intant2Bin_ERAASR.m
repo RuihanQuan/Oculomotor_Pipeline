@@ -110,9 +110,9 @@ for intan_file_index = 1:length(intan_files)
     read_Intan_RHS2000_file(intan_file);
     STIM_CHANS = find(any(stim_data~=0, 2));
     if ~isempty(STIM_CHANS)
-        TRIGDAT = stim_data(STIM_CHANS(1),:)';
+        TRIGDAT = stim_data(STIM_CHANS(1),:);
     else
-        TRIGDAT = stim_data(1,:)';
+        TRIGDAT = stim_data(1,:);
     end
     
   

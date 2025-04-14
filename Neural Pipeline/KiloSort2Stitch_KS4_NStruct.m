@@ -97,7 +97,7 @@ segment_marks = cumsum(segment_marks);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 10;
+FR_thr = 15;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
