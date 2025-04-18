@@ -51,7 +51,7 @@ file_names = strrep(file_names, '_Neural.mat', '');
 %% start of loop
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
 fileID = fopen(fullfile(outputfolder, ['all_files_filtered_lsqr.bin']),'w');
-for file_index =4: 7 % length(file_num_list)
+for file_index =1:length(file_num_list)
 
 sample = segment_marks(file_index)+1:segment_marks(file_index+1);
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
@@ -71,7 +71,7 @@ trigs1 = find(diff(TRIGDAT) < 0);
 trigs2 = find(diff(TRIGDAT) > 0);
 if isempty(trigs1)
     stimData(Data.Intan_idx) = Data.Neural(:, 131);
-    TRIGDAT =stimData(1:end-2);
+    TRIGDAT =stimData;
     % STIM_CHANS = find(any(stim_data~=0, 2));
     % TRIGDAT = stim_data(STIM_CHANS(1),:)';
     trigs1 = find(diff(TRIGDAT) < 0); 
@@ -158,7 +158,7 @@ end
 %%
 tic
 dataCleaned = raw_signal_segs;
-filterOrder =17;       % Number of lags to include (x(t), x(t-1), ...)
+filterOrder =18;       % Number of lags to include (x(t), x(t-1), ...)
 windowSize =12;       % Number of time points in each window
 n = filterOrder+windowSize;
 for i = 1:length(sample_trials)
@@ -216,8 +216,9 @@ for i = 1:length(sample_trials)
             y_true = y - a_est';
             y_fit = y(offsets+1:end);
             x_fit = 1:length(y_fit);
-            p = polyfit(x_fit, y_fit, 4);
+            p = polyfit(x_fit, y_fit, 6);
             template = polyval(p, x_fit);
+            % template(1) = y_fit(1);
             y_true(offsets+1:end) = y_true(offsets+1:end) - template;
             % y_true(zero_idx) =0.15*interp1(nonzero_idx, y_true(nonzero_idx), zero_idx, 'pchip');
             y_true_all(segment(n+1:end))  = y_true(n+1:end) -linspace(y_true(n+1), y_true(end), length(segment(n+1:end)));
@@ -232,7 +233,10 @@ for i = 1:length(sample_trials)
 end
 toc
 %%
-
+% figure
+% plot(template)
+% hold on
+% plot(y_fit)
 %%
 filteredData= rawData(:, 1:128);
 sample_chans = 1:128;
@@ -261,7 +265,7 @@ end
 % [b, a] = butter(4, 250/ (30000 / 2) , 'high');
 % temp = filtfilt(b,a, filteredData(:, chan));
 % Z = ZoomPlot([ rawData(:, chan),temp, TRIGDAT*500]);
-% % Z = ZoomPlot([ rawData(:, 107), rawData(:, 105), rawData(:, 108)]);
+% Z = ZoomPlot([ rawData(:, 107), rawData(:, 105), rawData(:, 108)]);
 %%
 Data.Neural(:, 1:128) = filteredData(Data.Intan_idx, 1:128);
 save([outputfolder '\filtered\' file_name '_filtered.mat'], 'Data', '-v7.3');
