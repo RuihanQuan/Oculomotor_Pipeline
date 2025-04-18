@@ -51,7 +51,7 @@ file_names = strrep(file_names, '_Neural.mat', '');
 %% start of loop
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
 fileID = fopen(fullfile(outputfolder, ['all_files_filtered_lsqr.bin']),'w');
-for file_index =1:length(file_num_list)
+for file_index =4: 7 % length(file_num_list)
 
 sample = segment_marks(file_index)+1:segment_marks(file_index+1);
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
@@ -71,7 +71,7 @@ trigs1 = find(diff(TRIGDAT) < 0);
 trigs2 = find(diff(TRIGDAT) > 0);
 if isempty(trigs1)
     stimData(Data.Intan_idx) = Data.Neural(:, 131);
-    TRIGDAT =stimData;
+    TRIGDAT =stimData(1:end-2);
     % STIM_CHANS = find(any(stim_data~=0, 2));
     % TRIGDAT = stim_data(STIM_CHANS(1),:)';
     trigs1 = find(diff(TRIGDAT) < 0); 
@@ -107,9 +107,35 @@ fs = 30000; % samplig rate at 30kHz
 fc = 300; % highpass at 300 Hz
 sample_chans = 1:128;
 sample_trials = 1:num_repeats;
-prebuffer = 40;
-postbuffer =100;
+prebuffer = 300;
+postbuffer =300;
+[b, a] = butter(4, 10/ (30000 / 2) , 'high');  % 4th-order Butterworth filter
 raw_signal_segs = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
+%% extract seg:
+% extract segments for template
+% start = 50;
+% temp = start:NSTIM;
+% period_avg = 15;
+% skip_n = 4;
+% temp = temp(or(mod(temp, num_pulse)==0, mod(temp, num_pulse) > skip_n));
+% 
+% template_segments= reshape(segments_aligned(:, 1:period_avg)', 1, []);
+% segments_linear = reshape(segments_aligned', 1, []);
+% chn_pulse_data = rawData(template_segments, 1:128);
+% average_across_chan = zeros(size(segments_aligned,2), 128);
+% for i = 1:128
+%     chn = rawData(:, i);
+%     chn_pulse = chn(segments_aligned);
+%     mean_template = zeros(1, size( chn_pulse, 2));
+%     mean_template(1:period_avg) = mean(chn_pulse(temp, 1:period_avg));  
+%     mean_template(1:period_avg) = mean_template(1:period_avg) - mean_template(1);
+%     average_across_chan(:, i) = mean_template;
+% end
+% %%
+% plot(mean_template)
+% hold on
+% plot(stimData(train_seg)*500)
+%%
 stim_segs = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
 for i = 1:length(sample_trials)
     sample_trial = sample_trials(i);
@@ -122,6 +148,9 @@ for i = 1:length(sample_trials)
         segment = [prebuffer_seg, train_seg, postbuffer_seg];
         raw_signal_segs(i, :, j) = rawData(segment, sample_chan);
         stim_segs(i, :, j) =  TRIGDAT(segment,:);
+%         template = repmat(average_across_chan(:, j), num_pulse, 1);
+%         stim_segs(i, prebuffer+1:prebuffer+period*num_pulse, j) = template; 
+        
     end
 
 end
@@ -129,43 +158,76 @@ end
 %%
 tic
 dataCleaned = raw_signal_segs;
-for i = 1:1:length(sample_trials)
+filterOrder =17;       % Number of lags to include (x(t), x(t-1), ...)
+windowSize =12;       % Number of time points in each window
+n = filterOrder+windowSize;
+for i = 1:length(sample_trials)
     for j = 1:length(sample_chans)
         
-        x = stim_segs(i,:,j);
+        y_true_all = raw_signal_segs(i, :,j);
+        for l = 1:num_pulse
+            segment = ((prebuffer -n+1):(prebuffer+period))+(l-1)*period;
+            x = stim_segs(i,segment,j);
+            % x = resample(x, 10, 1);
 
-        y = raw_signal_segs(i, :, j);
-        % Assume x and y are column vectors of the same length
-        N = length(x);
-        filterOrder =14;       % Number of lags to include (x(t), x(t-1), ...)
-        windowSize =12;       % Number of time points in each window
+            % x(x<0) = -x(x<0);
+            y = raw_signal_segs(i, segment,j);
+            % y = resample(y, 10, 1);
+            % Assume x and y are column vectors of the same length
+            N = length(x);
+            
 
-        a_est = zeros(N, 1);   % Output estimate of a(t)
+            a_est = zeros(N, 1);   % Output estimate of a(t)
 
-        for t = windowSize + filterOrder - 1 : N
-            % Construct y_local from the current window
-            y_local = y(t - windowSize + 1 : t);  % [windowSize x 1]
+            for t = windowSize + filterOrder - 1 : N
+                % Construct y_local from the current window
+                y_local = y(t - windowSize + 1 : t);  % [windowSize x 1]
 
-            % Initialize X_local
-            X_local = zeros(windowSize, filterOrder);  % [windowSize x filterOrder]
+                % Initialize X_local
+                X_local = zeros(windowSize, filterOrder);  % [windowSize x filterOrder]
+    
+                for k = 1:filterOrder
+                    % Fill each column with shifted x values
+                    X_local(:, k) = x(t - windowSize - k + 2 : t - k + 1);
+                end
+                % X_local = [X_local, ones(windowSize, 1)];
+                % Solve least squares: theta = (X'X)^-1 X'y
+                theta = pinv(X_local) * y_local';  % [filterOrder x 1]
 
-            for k = 1:filterOrder
-                % Fill each column with shifted x values
-                X_local(:, k) = x(t - windowSize - k + 2 : t - k + 1);
+                % Use most recent x values to estimate a(t)
+                % x_recent = [x(t:-1:t - filterOrder + 1),  1];  % [filterOrder x 1]
+                x_recent = x(t:-1:t - filterOrder + 1);
+ 
+                % x_recent(2:end) = 0;
+                a_est(t) = x_recent(:)' * theta;        % scalar
+
             end
-            X_local = [X_local, ones(windowSize, 1)];
-            % Solve least squares: theta = (X'X)^-1 X'y
-            theta = pinv(X_local) * y_local';  % [filterOrder x 1]
-
-            % Use most recent x values to estimate a(t)
-            x_recent = [x(t:-1:t - filterOrder + 1), 1];  % [filterOrder x 1]
-            % x_recent = x(t:-1:t - filterOrder + 1); 
-            a_est(t) = x_recent(:)' * theta;        % scalar
+            nonzero_mask = a_est~=0;
+            onsets = find(diff([0; nonzero_mask]) == 1, 1);
+            offsets = find(diff([ nonzero_mask; 0]) == -1, 1, 'last');
+%             zero_idx = find(a_est~=0);  % or logical mask where it's zero
+%             nonzero_idx = find(a_est==0);
+            if ~isempty(offsets)
+               
+                % a_est(30:onsets) = linspace(0, a_est(onsets), length(30:onsets));
+                
+                % a_est(offsets+1:idx+offsets) = linspace(y(offsets+1), 0, idx);
+            end
+            y_true = y - a_est';
+            y_fit = y(offsets+1:end);
+            x_fit = 1:length(y_fit);
+            p = polyfit(x_fit, y_fit, 4);
+            template = polyval(p, x_fit);
+            y_true(offsets+1:end) = y_true(offsets+1:end) - template;
+            % y_true(zero_idx) =0.15*interp1(nonzero_idx, y_true(nonzero_idx), zero_idx, 'pchip');
+            y_true_all(segment(n+1:end))  = y_true(n+1:end) -linspace(y_true(n+1), y_true(end), length(segment(n+1:end)));
+            
         end
+        
+        y_true_all(1:prebuffer)  = raw_signal_segs(i, 1:prebuffer, j) - linspace(y_true_all(1), y_true_all(prebuffer), length(1:prebuffer));
 
-        % Final output
-        y_true = y - a_est';
-        dataCleaned(i, :, j) = y_true;
+        % y_true = resample(y_true, 1, 10);
+        dataCleaned(i, :, j) = y_true_all;
     end
 end
 toc
@@ -184,8 +246,10 @@ for i = 1:length(sample_trials)
         postbuffer_seg = train_seg(end)+1:postbuffer+train_seg(end);
         segment = [prebuffer_seg, train_seg, postbuffer_seg]; % , postbuffer_seg
         filteredData(segment, sample_chan) =  dataCleaned(i, :, j);
-        % if ismember(sample_chan, Data.stim_channels) % to remove the artifact due to poststim processing from ERAASR in stim channels
-        % filteredData(postbuffer_seg, sample_chan) =  filteredData(postbuffer_seg, sample_chan) - linspace(0, (filteredData(postbuffer_seg(end), sample_chan)-filteredData(postbuffer_seg(end)+1, sample_chan)), length(postbuffer_seg))';
+        % if ismember(sample_chan, Data.stim_channels) % to remove the
+        % artifact due to poststim processing from ERAASR in stim channels
+        % % filteredData(train_seg(end)+1, sample_chan)-filteredData(train_seg(end), sample_chan)
+        filteredData(postbuffer_seg, sample_chan) =  filteredData(postbuffer_seg, sample_chan) - linspace(filteredData(train_seg(end)+1, sample_chan)-filteredData(train_seg(end), sample_chan), (filteredData(postbuffer_seg(end), sample_chan)-filteredData(postbuffer_seg(end)+1, sample_chan)), length(postbuffer_seg))';
             % filteredData(postbuffer_seg, sample_chan) =  filteredData(postbuffer_seg, sample_chan) - linspace(filteredData(postbuffer_seg(1), sample_chan), 0, length(postbuffer_seg))';
         % end
            
@@ -193,8 +257,10 @@ for i = 1:length(sample_trials)
 
 end
 %%
-% chan = 78;
-% Z = ZoomPlot([ rawData(:, chan), filteredData(:, chan), stimData*500]);
+% chan =78;
+% [b, a] = butter(4, 250/ (30000 / 2) , 'high');
+% temp = filtfilt(b,a, filteredData(:, chan));
+% Z = ZoomPlot([ rawData(:, chan),temp, TRIGDAT*500]);
 % % Z = ZoomPlot([ rawData(:, 107), rawData(:, 105), rawData(:, 108)]);
 %%
 Data.Neural(:, 1:128) = filteredData(Data.Intan_idx, 1:128);

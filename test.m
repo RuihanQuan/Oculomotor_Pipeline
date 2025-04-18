@@ -31,11 +31,11 @@ fs = 30000; % samplig rate at 30kHz
 fc = 300; % highpass at 300 Hz
 f = num_pulse*20;  % frequency of stim wave
 cutoff = 2*f;  % cutoff frequency (just above fundamental)
-[b, a] = butter(4, 250/ (30000 / 2) , 'high');  % 4th-order Butterworth filter
+[b, a] = butter(4, 10/ (30000 / 2) , 'high');  % 4th-order Butterworth filter
 sample_chans = 1:128;
 sample_trials = 1:num_repeats;
-prebuffer =40;
-postbuffer =15;
+prebuffer =60;
+postbuffer =400;
 raw_signal_segs = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
 stim_segs = zeros(length(sample_trials), prebuffer+num_pulse*period+postbuffer, length(sample_chans));
 for i = 1:length(sample_trials)
@@ -48,19 +48,27 @@ for i = 1:length(sample_trials)
         prebuffer_seg = -prebuffer+train_seg(1):train_seg(1)-1;
         postbuffer_seg = train_seg(end)+1:postbuffer+train_seg(end);
         segment = [prebuffer_seg, train_seg, postbuffer_seg];
-        % raw_signal_segs(i, :, j) = filtfilt(b,a,rawData(segment, sample_chan));
+        raw_signal_segs(i, :, j) = filtfilt(b,a,rawData(segment, sample_chan));
         raw_signal_segs(i, :, j) =rawData(segment, sample_chan);
-        stim_segs(i, :, j) =  TRIGDAT(segment,:);
+        stim_segs(i, :, j) =  TRIGDAT(segment-3,:);
     end
 
 end
 %%
-x = stim_segs(2,:,63);
+n1 = 13;
+n2 = 78;
+y_true_all = raw_signal_segs(n1, :,n2);
+for i = 1:num_pulse+1
+segment = ((prebuffer -29):(prebuffer+period+30))+(i-1)*period;
+x = stim_segs(n1,segment,n2);
+% x = resample(x, 10, 1);
 
-y = raw_signal_segs(2, :, 63);
+% x(x<0) = -x(x<0);
+y = raw_signal_segs(n1, segment,n2);
+% y = resample(y, 10, 1);
 % Assume x and y are column vectors of the same length
 N = length(x);
-filterOrder =16;       % Number of lags to include (x(t), x(t-1), ...)
+filterOrder =18;       % Number of lags to include (x(t), x(t-1), ...)
 windowSize =12;       % Number of time points in each window
 
 a_est = zeros(N, 1);   % Output estimate of a(t)
@@ -82,14 +90,29 @@ for t = windowSize + filterOrder - 1 : N
 
     % Use most recent x values to estimate a(t)
     % x_recent = [x(t:-1:t - filterOrder + 1), 1];  % [filterOrder x 1]
-    x_recent = x(t:-1:t - filterOrder + 1); 
+    x_recent = x(t:-1:t - filterOrder + 1);
+ 
+    % x_recent(2:end) = 0;
     a_est(t) = x_recent(:)' * theta;        % scalar
+
 end
+nonzero_mask = a_est~=0;
+% onsets = find(diff([0; nonzero_mask]) == 1, 1);
+            offsets = find(diff([ nonzero_mask; 0]) == -1, 1, 'last');
+            if ~isempty(offsets)
+                % a_est(30:onsets) = linspace(0, a_est(onsets), length(30:onsets));
+                a_est(offsets:end) = linspace(y(offsets), y(end), length(offsets:length(a_est)));
+            end
+            y_true = y - a_est';
+            y_true_all(segment)  = y_true;
+end
+y_true_all( segment(end):end)  = raw_signal_segs(n1, segment(end):end, n2) - linspace(y_true_all(segment(end)), y_true_all(end), length(segment(end):length(raw_signal_segs(n1, :, n2))));
 
-% Final output
-y_true = y - a_est';
+        y_true_all(1:prebuffer)  = raw_signal_segs(i, 1:prebuffer, j) - linspace(y_true_all(1), y_true_all(prebuffer), length(1:prebuffer));
 
+% y_true = resample(y_true, 1, 10);
 % Plot
+%%
 figure;
 subplot(3,1,1); 
 plot(y, 'DisplayName','Raw Data'); 
@@ -102,15 +125,23 @@ plot(y, 'LineWidth',3.0, 'DisplayName','raw signal')
 hold on
 plot(a_est, 'LineWidth',1.0, 'DisplayName','estimated artifact'); 
 
+% [b, a] = butter(4, 250/ (30000 / 2) , 'high');  % 4th-order Butterworth filter
+% title('Estimated a(t)');
+% legend
+% box off
+%%
+[b, a] = butter(4, 250/ (30000 / 2) , 'high');
+figure
+subplot(3,1,1); 
+plot( raw_signal_segs(n1, :,n2));
 
-title('Estimated a(t)');
-legend
+title('raw data');
 box off
-subplot(3,1,3); 
-plot(filtfilt(b, a, y_true));
+subplot(3,1,2); 
+plot( filtfilt(b, a, y_true_all(:)));
 
 title('Recovered y_{true}(t)');
 box off
 %%
 
-ZoomPlot([a_est, [0, 0, 0, x(1:end-3)]'*100, filtfilt(b, a, y_true)', y'])
+ZoomPlot( y_true_all')

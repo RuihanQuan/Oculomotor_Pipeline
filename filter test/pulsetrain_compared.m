@@ -50,7 +50,7 @@ stim_chans = Data_raw.Data.stim_channels;
 %% generate tensor
 fs = 30000; % samplig rate at 30kHz
 fc = 300; % highpass at 300 Hz
-sample_chans = [stim_chans(2:3), 78, 107];
+sample_chans = [stim_chans(2:3), 61, 78, 107];
 sample_trials = 1:11:num_repeats;
 prebuffer = 1000;
 postbuffer = 1000;

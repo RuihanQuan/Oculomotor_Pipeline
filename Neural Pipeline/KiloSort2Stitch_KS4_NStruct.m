@@ -38,7 +38,7 @@ file_indices = [];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [];
+trial_number = [4:7];
 file_num_list = [];
 %% sort the folder names with respect to the 5th character 
 fileNumberlist = [];
