@@ -36,15 +36,20 @@ end
 % channel_num = 8;
 % freq = 400;
 % 
-% trial_num = [14, 45];
+% trial_num = [10, 45];
 % duration = 100;
 % channel_num = 16;
 % freq = 200;
 
 
-trial_num = [10, 40];
+% trial_num = [10, 40];
+% duration = 100;
+% channel_num = 8;
+% freq = 200;
+
+trial_num = [14, 45];
 duration = 100;
-channel_num = 8;
+channel_num = 16;
 freq = 200;
 %% preprocess and post_process on the data 
 p.prebuffer = 100; %prepulse length ms
@@ -70,16 +75,16 @@ Refined_Data = post_process_neural(Processed_Data);
 label = {['current steering trial #' num2str(trial_num(1))], ['non current steering trial #' num2str(trial_num(2))]};
 coloring = {'b', 'r'};
 fig = figure;
-tiledlayout(3,1)
-nexttile;
+tiledlayout(4,2)
+title_txt = sprintf("stim with %i channels at %i Hz in %i ms",channel_num, freq, duration);
 for i = 1:2
+nexttile;
 segs = Refined_Data{i};
 plot(segs.timeframe, segs.ipsi_ehp_avg, 'DisplayName', label{i});
 hold on
 x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
 y1_plot = [segs.CI_ipsi_ehp_lower, fliplr(segs.CI_ipsi_ehp_upper)];
 fill(x_plot, y1_plot, 1,'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
-end
 xline(0, '--r', 'DisplayName','Stimulus onset');
 xline(duration, 'k--', 'DisplayName',num2str(duration))
 hold off
@@ -90,15 +95,17 @@ legend
 xlabel("time (ms)")
 ylabel("Eye Horizontal Position (deg)")
     
-nexttile;
+end
+
+
 for i = 1:2
+nexttile;
 segs = Refined_Data{i};
 plot(segs.timeframe, 1000*segs.ipsi_ehv_avg, 'DisplayName', label{i});
 hold on  
 x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
 y3_plot = [segs.CI_ipsi_ehv_lower, fliplr(segs.CI_ipsi_ehv_upper)];
 fill(x_plot, 1000*y3_plot, 1, 'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
-end
 xline(0, '--r', 'DisplayName','Stimulus onset');
 xline(duration, 'k--', 'DisplayName',num2str(duration))
 hold off
@@ -107,17 +114,102 @@ axis([-50 150 -250 200]);
 title(sprintf("Average Eye horizontal Velocity stim with %i channels at %i Hz in %i ms",channel_num, freq, duration),'Fontsize',12);
 legend
 xlabel("time (ms)")
-ylabel("Eye Horizontal Velocity (deg/s)")    
+ylabel("Eye Horizontal Velocity (deg/s)")   
+end
+ 
 
 nexttile;
-for i = 1:2
-segs = Refined_Data{i};
-plot(segs.timeframe, segs.fr_avg, 'DisplayName', label{i});
-hold on  
-x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
-y3_plot = [segs.CI_fr_lower, fliplr(segs.CI_fr_upper)];
-fill(x_plot, y3_plot, 1, 'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
+n = 1;
+segs = Refined_Data{n};
+ua= segs.ua;
+C = bone(length(ua)*2);
+C=flip(C(1:length(ua),:));
+timeframe = segs.timeframe;
+hold on
+for row = 1:length(ua)
+    ua_seg = ua{row}; % Extract the binary array
+    x = find(ua_seg == 1);    % Get indices of 1s
+    yStart = row - 0.45;            % Start position of vertical line
+    yEnd = row + 0.45;              % End position of vertical line
+    
+                % Plot vertical lines at each '1' position
+    for k = 1:length(x)
+        plot([timeframe(x(k)) timeframe(x(k))], [yStart yEnd], 'Color', C(row,:), 'LineWidth', 2);
+    end
 end
+        
+% add shaded region that denotes stim duration
+
+    x = [0, duration, duration, 0];
+    y = [0, 0, length(ua)+1, length(ua)+1];
+    patch(x, y, 'yellow', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+
+            % Formatting
+xlim([-50 150])
+ylim([0 length(ua)+1]);
+xlabel('time (ms)');
+ylabel('trials');
+yticks(1:length(ua));
+title(sprintf('Raster Plot %s %s', label{n}, title_txt), 'FontSize', 16);
+grid off;
+box off;
+hold off;
+ax = gca;
+ax.FontSize = 16; 
+
+nexttile;
+n = 2;
+segs = Refined_Data{n};
+ua= segs.ua;
+C = bone(length(ua)*2);
+C=flip(C(1:length(ua),:));
+timeframe = segs.timeframe;
+hold on
+for row = 1:length(ua)
+    ua_seg = ua{row}; % Extract the binary array
+    x = find(ua_seg == 1);    % Get indices of 1s
+    yStart = row - 0.45;            % Start position of vertical line
+    yEnd = row + 0.45;              % End position of vertical line
+    
+                % Plot vertical lines at each '1' position
+    for k = 1:length(x)
+        plot([timeframe(x(k)) timeframe(x(k))], [yStart yEnd], 'Color', C(row,:), 'LineWidth', 2);
+    end
+end
+        
+% add shaded region that denotes stim duration
+
+    x = [0, duration, duration, 0];
+    y = [0, 0, length(ua)+1, length(ua)+1];
+    patch(x, y, 'yellow', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+
+            % Formatting
+xlim([-50 150])
+ylim([0 length(ua)+1]);
+xlabel('time (ms)');
+ylabel('trials');
+yticks(1:length(ua));
+title(sprintf('Raster Plot %s %s', label{n}, title_txt), 'FontSize', 16);
+grid off;
+box off;
+hold off;
+ax = gca;
+ax.FontSize = 16; 
+
+for i = 1:2
+nexttile;
+segs = Refined_Data{i};
+x = segs.timeframe;
+y = segs.fr_avg;
+x_fill = [x, fliplr(x)];
+y_fill = [y, zeros(size(y))];
+
+fill(x_fill, y_fill, coloring{i}, 'FaceAlpha', 0.5, 'EdgeColor', 'k', 'DisplayName',label{i});
+% plot(segs.timeframe, segs.fr_avg, 'DisplayName', label{i});
+hold on  
+% x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
+% y3_plot = [segs.CI_fr_lower, fliplr(segs.CI_fr_upper)];
+% fill(x_plot, y3_plot, 1, 'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
 xline(0, '--r', 'DisplayName','Stimulus onset');
 xline(duration, 'k--', 'DisplayName',num2str(duration))
 hold off
@@ -128,5 +220,7 @@ title(sprintf("Average Firing Rate for one Cell stim with %i channels at %i Hz i
 xlabel("time (ms)")
 ylabel("Unit Firing Rate")   
 
+
+end
 
 %%

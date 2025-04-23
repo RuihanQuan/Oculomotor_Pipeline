@@ -24,7 +24,7 @@ for i = 1:length(neuralFiles)
 end
 
 %% read data file with neural data
-experiment_setting = readtable("D:\Oculomotor Research\Experiment Summary\Experiment_Setting_Summary.xlsx", "Sheet","CRR_NXPL_STIM_002");
+experiment_setting = readtable("D:\Experiment Summary\Experiment_Setting_Summary.xlsx", "Sheet","CRR_NXPL_STIM_002");
 durs = experiment_setting.Duration_ms_;
 freqs = experiment_setting.Frequency_Hz_;
 ids = experiment_setting.BR;
@@ -94,7 +94,7 @@ Processed_Data = cell(2, 1);
 % Removed_Data = cell(size(Filelist, 1), 1);
 %%
 temp = 1:length(trial_nums);
-n = 1;
+n = 3;
 trial_num = trial_nums(temp(n), :);
 duration = durations{temp(n)};
 freq = frequencies(temp(n),:);
@@ -115,16 +115,16 @@ label = {['trial # ' num2str(trial_num(1)) ' stim with ' freq{1} ' Hz'], ['trial
 title_txt = sprintf('at %s \\muA in %s ms at %s', cur, duration, region);
 coloring = {'b', 'r'};
 fig = figure;
-tiledlayout(5,1)
-nexttile;
+tiledlayout(4,2)
+
 for i = 1:2
+nexttile;
 segs = Refined_Data{i};
 plot(segs.timeframe, segs.ipsi_ehp_avg, 'DisplayName', label{i});
 hold on
 x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
 y1_plot = [segs.CI_ipsi_ehp_lower, fliplr(segs.CI_ipsi_ehp_upper)];
 fill(x_plot, y1_plot, 1,'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
-end
 xline(0, '--r', 'DisplayName','Stimulus onset');
 xline(str2double(duration), 'k--', 'DisplayName',[duration ' ms'])
 hold off
@@ -136,16 +136,18 @@ xlabel("time (ms)")
 ylabel("Eye Horizontal Position (deg)")
 ax = gca;
 ax.FontSize = 16; 
+end
+
    
-nexttile;
+
 for i = 1:2
+nexttile;
 segs = Refined_Data{i};
 plot(segs.timeframe, 1000*segs.ipsi_ehv_avg, 'DisplayName', label{i});
 hold on  
 x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
 y3_plot = [segs.CI_ipsi_ehv_lower, fliplr(segs.CI_ipsi_ehv_upper)];
 fill(x_plot, 1000*y3_plot, 1, 'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
-end
 xline(0, '--r', 'DisplayName','Stimulus onset');
 xline(str2double(duration), 'k--', 'DisplayName',[duration ' ms'])
 hold off
@@ -157,6 +159,8 @@ xlabel("time (ms)")
 ylabel("Eye Horizontal Velocity (deg/s)")   
 ax = gca;
 ax.FontSize = 16; 
+end
+
 
 nexttile;
 n = 1;
@@ -174,13 +178,17 @@ for row = 1:length(ua)
     
                 % Plot vertical lines at each '1' position
     for k = 1:length(x)
+        
         plot([timeframe(x(k)) timeframe(x(k))], [yStart yEnd], 'Color', C(row,:), 'LineWidth', 2);
     end
 end
         
 % add shaded region that denotes stim duration
 if ~isempty(duration)
-    rectangle('Position', [0, 0, str2double(duration), length(ua)+1], 'FaceColor', 'yellow', 'FaceAlpha', 0.2,  'EdgeColor', 'none');
+    x = [0, str2double(duration), str2double(duration), 0];
+    y = [0, 0, length(ua)+1, length(ua)+1];
+    patch(x, y, 'yellow', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    % rectangle('Position', [0, 0, str2double(duration), length(ua)+1], 'FaceColor', 'yellow', 'FaceAlpha', 0.2,  'EdgeColor', 'none');
 end
             % Formatting
 xlim([-50 segs.timeframe(end)])
@@ -217,7 +225,10 @@ end
         
 % add shaded region that denotes stim duration
 if ~isempty(duration)
-    rectangle('Position', [0, 0, str2double(duration), length(ua)+1], 'FaceColor', 'yellow', 'FaceAlpha', 0.2,  'EdgeColor', 'none');
+    x = [0, str2double(duration), str2double(duration), 0];
+    y = [0, 0, length(ua)+1, length(ua)+1];
+    patch(x, y, 'yellow', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    % rectangle('Position', [0, 0, str2double(duration), length(ua)+1], 'FaceColor', 'yellow', 'FaceAlpha', 0.2,  'EdgeColor', 'none');
 end
             % Formatting
 xlim([-50 segs.timeframe(end)])
@@ -232,17 +243,23 @@ hold off;
 ax = gca;
 ax.FontSize = 16; 
 
-nexttile;
+
 for i = 1:2
+nexttile;
 segs = Refined_Data{i};
-plot(segs.timeframe, segs.fr_avg, 'DisplayName', label{i});
+x = segs.timeframe;
+y = segs.fr_avg;
+x_fill = [x, fliplr(x)];
+y_fill = [y, zeros(size(y))];
+
+fill(x_fill, y_fill, coloring{i}, 'FaceAlpha', 0.5, 'EdgeColor', 'k', 'DisplayName',label{i});
+% plot(segs.timeframe, segs.fr_avg, 'DisplayName', label{i});
 hold on  
-x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
-y3_plot = [segs.CI_fr_lower, fliplr(segs.CI_fr_upper)];
-fill(x_plot, y3_plot, 1, 'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
-end
-xline(0, '--r', 'DisplayName','Stimulus onset');
-xline(str2double(duration), 'k--', 'DisplayName',[duration ' ms'])
+% x_plot = [segs.timeframe, fliplr(segs.timeframe)]; 
+% y3_plot = [segs.CI_fr_lower, fliplr(segs.CI_fr_upper)];
+% fill(x_plot, y3_plot, 1, 'FaceColor', coloring{i},'FaceAlpha',0.3, 'EdgeColor','none', 'DisplayName', '95% CI');%fill the confidence interval with color
+% xline(0, '--r', 'DisplayName','Stimulus onset');
+% xline(str2double(duration), 'k--', 'DisplayName',[duration ' ms'])
 hold off
 box off
 axis([-50 segs.timeframe(end) 0 150]);
@@ -252,6 +269,8 @@ xlabel("time (ms)")
 ylabel("Unit Firing Rate")   
 ax = gca;
 ax.FontSize = 16; 
+
+end
 
 
 %% plot channel maps

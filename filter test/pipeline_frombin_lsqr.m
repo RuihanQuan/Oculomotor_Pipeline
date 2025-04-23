@@ -24,10 +24,13 @@ for i = 1:length(trigger_files)
         fileNumber = str2double(fileidx(3));
         fileNumberlist = [fileNumberlist fileNumber];
 end
-
+% trial_number =[10:17, 19, 32:38, 40, 43:45];
+% [~,~,sorted_idx] = intersect(trial_number, fileNumberlist);
 [~, sorted_idx] = sort(fileNumberlist);
 trigger_files = trigger_files(sorted_idx);
+
 %% extract sgement marks
+
 file_num_list = [];
 segment_marks = zeros(1, length(trigger_files)+1);
 for i = 2:length(trigger_files)+1
@@ -40,27 +43,38 @@ for i = 2:length(trigger_files)+1
     segment_marks(i) = length(trigger.session_trigger);
 end
 segment_marks = cumsum(segment_marks);
-%%
 
+%%
 t_count = zeros(1, length(file_num_list));
 file_names = dir(fullfile(neural_directory, '*_Neural.mat'));
 
 file_names = struct2cell(file_names);
 file_names = file_names(1,:);
 file_names = strrep(file_names, '_Neural.mat', '');
+fileNumberlist = [];
+for i = 1: length(file_names)
+    filename = file_names{i};
+    fileidx = split(filename, ["_",".", "-"]);
+    fileNumber = str2double(fileidx(1));
+    fileNumberlist = [fileNumberlist fileNumber];
+end
+[~,~,sorted_idx] = intersect(file_num_list, fileNumberlist);
+file_names = file_names(sorted_idx);
 %% start of loop
 h = waitbar(0, 'Processing...'); % Initialize the progress bar
 fileID = fopen(fullfile(outputfolder, ['all_files_filtered_lsqr.bin']),'w');
-for file_index =1:length(file_num_list)
+for file_index = 1:length(file_num_list)
 
 sample = segment_marks(file_index)+1:segment_marks(file_index+1);
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
-rawData = ReadBin([file_directory rawDatafile],128,[1:128], sample);
+% rawData = ReadBin([file_directory rawDatafile],128,[1:128], sample);
 file_name = file_names{file_index};
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
 
 load([neural_directory,'\', file_name, '_Neural.mat']); % matlab file
-stimData = ReadBin([file_directory2 stimDatafile],1,1, sample);
+rawData = Data.Neural(:, 1:128);
+% stimData = ReadBin([file_directory2 stimDatafile],1,1, sample);
+stimData = Data.Neural(:, 131);
 % rawData = ERASER.ReadBin(dataFileDir , 128, [1:128], [1:30*Data.N]);
 %% extract trial by time by channel data
 % first extract segments
@@ -146,7 +160,7 @@ for i = 1:length(sample_trials)
         prebuffer_seg = -prebuffer+train_seg(1):train_seg(1)-1;
         postbuffer_seg = train_seg(end)+1:postbuffer+train_seg(end);
         segment = [prebuffer_seg, train_seg, postbuffer_seg];
-        raw_signal_segs(i, :, j) = rawData(segment, sample_chan);
+        raw_signal_segs(i, :, j) = filtfilt(b,a, rawData(segment, sample_chan));
         stim_segs(i, :, j) =  TRIGDAT(segment,:);
 %         template = repmat(average_across_chan(:, j), num_pulse, 1);
 %         stim_segs(i, prebuffer+1:prebuffer+period*num_pulse, j) = template; 
@@ -211,7 +225,7 @@ for i = 1:length(sample_trials)
                
                 % a_est(30:onsets) = linspace(0, a_est(onsets), length(30:onsets));
                 
-                % a_est(offsets+1:idx+offsets) = linspace(y(offsets+1), 0, idx);
+                % a_est(offsets+1:end) = linspace(y(offsets+1), 0, length(a_est(offsets+1:end)));
             end
             y_true = y - a_est';
             y_fit = y(offsets+1:end);
@@ -261,13 +275,13 @@ for i = 1:length(sample_trials)
 
 end
 %%
-% chan =78;
+% chan =107;
 % [b, a] = butter(4, 250/ (30000 / 2) , 'high');
 % temp = filtfilt(b,a, filteredData(:, chan));
 % Z = ZoomPlot([ rawData(:, chan),temp, TRIGDAT*500]);
 % Z = ZoomPlot([ rawData(:, 107), rawData(:, 105), rawData(:, 108)]);
 %%
-Data.Neural(:, 1:128) = filteredData(Data.Intan_idx, 1:128);
+Data.Neural(:, 1:128) = filteredData(:, 1:128); % was Data.Intan_idx
 save([outputfolder '\filtered\' file_name '_filtered.mat'], 'Data', '-v7.3');
 fwrite(fileID,int16(filteredData(:, 1:128)'),'int16');
 waitbar(file_index/length(file_names), h, sprintf('Prosessed %s %d%%', file_name, round(file_index/length(file_names)*100)));
@@ -275,4 +289,5 @@ waitbar(file_index/length(file_names), h, sprintf('Prosessed %s %d%%', file_name
 
 
 end
+%%
 fclose(fileID);

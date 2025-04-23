@@ -43,9 +43,9 @@ neuropixel_index = [    18, 19, 20, 21, 22, 23, 24, 25, ...
 
 
 session_trigger = [];
-% trial_number =[10:17, 19, 32:38, 40, 43:45];
+trial_number =[10:17, 19, 32:38, 40, 43:45];
 % trial_number =[10:17, 40, 43:45];
-trial_number = [];
+% trial_number = [];
 % trial_number = [4, 8, 14, 20];
 file_indices = [];
 % trial_number = [];
@@ -67,23 +67,14 @@ for i = 1:length(F)
         fileNumberlist = [fileNumberlist fileNumber];
 end
 
-[~, sorted_idx] = sort(fileNumberlist);
-F = F(sorted_idx);
+% [~, sorted_idx] = sort(fileNumberlist);
+% F = F(sorted_idx);
 %%
 if ~isempty(trial_number)
-    for i = 1:length(F)
-        % Extract the number from the filename
-        filename = F{i};
-        fileidx = split(filename, ["_","."]);
-        fileNumber = str2double(fileidx(5));
-        % Check if the file number is in the selected ranges
-        if any(fileNumber == trial_number)
-            file_indices = [file_indices, i]; % Add the index to the list
-        end
-    end
-else 
-    file_indices = 1:length(F);
+    [~,~,sorted_idx] = intersect(trial_number, fileNumberlist);
+    F = F(sorted_idx);
 end
+    file_indices = 1:length(F);
 %%
 
 

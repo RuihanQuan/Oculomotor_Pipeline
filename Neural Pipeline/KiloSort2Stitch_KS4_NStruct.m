@@ -34,11 +34,11 @@ if ~exist(outputfolder, 'file')
     mkdir(outputfolder)
 end
 file_indices = [];
-% trial_number =[10:17, 19, 32:38, 40, 43:45];
+trial_number =[10:17, 19, 32:38, 40, 43:45];
 % trial_number = [10:17, 40, 43:45];
 % trigger_file_path = 'D:\Oculomotor Research\Current_non-currtent\Neural data analysis\bin_test\mid_bot_all_session_trigger\';
 % trial_number = [4, 8, 14, 20];
-trial_number = [4:7];
+% trial_number = [];
 file_num_list = [];
 %% sort the folder names with respect to the 5th character 
 fileNumberlist = [];
@@ -97,7 +97,7 @@ segment_marks = cumsum(segment_marks);
 
 
 %file_path = 'E:\kilosort_result\allfile_test_mid_bot_003_no2021\kilosort4\';
-FR_thr = 15;
+FR_thr = 10;
 
 % if ~iscell(file_names)
 %     file_names = {file_names};
@@ -190,7 +190,7 @@ h = waitbar(0, 'Processing...'); % Initialize the progress bar
 segment_mark = 0; % 0 for the first neural data segment
 counter = 0;
 for file_index = 1: length(file_names)
-    segment_mark = segment_marks(file_index);
+    % segment_mark = segment_marks(file_index);
     file_name = file_names{file_index};
     disp(file_name)
     
@@ -218,13 +218,13 @@ for file_index = 1: length(file_names)
         N = N(clusterSites);
         [~,I] = sort(N,'descend');
         Data.cluster_sites = clusterSites(I);
-        sample =Data.Intan_idx+segment_mark;
+        sample =Data.Intan_idx+segment_mark-Data.Intan_idx(1)+1; % was Data.Intan_idx+segment_mark
         Data.Neural = Data_back.Neural(:, Data.cluster_sites);
         Data.Neural_channels = [Data.cluster_sites; Data.cluster_sites; Data.cluster_sites];
 
         artifact_removed = ReadBin([location bin_file],128,Data.cluster_sites, sample);
         
-        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites, sample);
+        preprocessed = ReadBin([file_path '\temp_wh.dat'],128,Data.cluster_sites,  sample);
 
         Data.Neural = [Data.Neural, artifact_removed, preprocessed];
         
@@ -234,7 +234,7 @@ for file_index = 1: length(file_names)
         % disp('segment_index')
         % disp(length(idx))
         
-        [~,idx,~] = intersect(Data.Intan_idx,idx);
+        [~,idx,~] = intersect(Data.Intan_idx-Data.Intan_idx(1),idx); % was Data.Intan_idx
         % disp('index_intersect')
         % disp(length(idx))
         spktimes(idx) = 1;
@@ -327,7 +327,7 @@ for file_index = 1: length(file_names)
 
         % Data_NStruct{cell_index} = Data;
     end
-    % segment_mark = segment_mark+length(Data.Intan_idx);
+   segment_mark = segment_mark+length(Data.Intan_idx);
     
  
     % warning off
