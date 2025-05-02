@@ -27,6 +27,7 @@ The code will then prompt
 
 **name session .bin file:**
 > This ask for an arbitrary name for the .bin file. The default is **all_files_**.
+The code will generate a .bin file for kilosort4 and a session_trigger folder for stitching the kilosort result back to the .mat file
 
 3. The ***.bin*** file is then used for spike sorting using ***kilosort4***. 
 
