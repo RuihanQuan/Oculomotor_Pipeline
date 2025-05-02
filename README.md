@@ -7,7 +7,7 @@
 ## Behavior Pipeline
 
 ### **artifact_filter.m** 
-MATLAB code for 
+MATLAB code for filtering unsuccessful trials based on behavior data. 
 
 ## Neural Pipeline
 
