@@ -67,14 +67,14 @@ for file_index = 1:length(file_num_list)
 
 sample = segment_marks(file_index)+1:segment_marks(file_index+1);
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
-% rawData = ReadBin([file_directory rawDatafile],128,[1:128], sample);
+rawData = ReadBin([file_directory rawDatafile],128,[1:128], sample);
 file_name = file_names{file_index};
 % file_directory = '\\10.16.59.34\cullenlab_server\Current Project Databases - NHP\2021 Abducens Stimulation (Neuropixel)\Data\Project 1 - Occulomotor Kinematics\Caesar_Session_2 - Copy\Renamed\';
 
 load([neural_directory,'\', file_name, '_Neural.mat']); % matlab file
-rawData = Data.Neural(:, 1:128);
-% stimData = ReadBin([file_directory2 stimDatafile],1,1, sample);
-stimData = Data.Neural(:, 131);
+% rawData = Data.Neural(:, 1:128);
+stimData = ReadBin([file_directory2 stimDatafile],1,1, sample);
+% stimData = Data.Neural(:, 131);
 % rawData = ERASER.ReadBin(dataFileDir , 128, [1:128], [1:30*Data.N]);
 %% extract trial by time by channel data
 % first extract segments
